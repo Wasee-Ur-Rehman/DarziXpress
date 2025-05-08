@@ -1,50 +1,49 @@
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
+// components/ui/card.jsx
+import * as React from "react";
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
+    className={`bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden ${className || ""}`}
     {...props} />
-))
-Card.displayName = "Card"
+));
+Card.displayName = "Card";
 
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={`p-5 sm:p-6 border-b border-slate-100 ${className || ""}`}
     {...props} />
-))
-CardHeader.displayName = "CardHeader"
+));
+CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <div
+  <h3 // Changed to h3 for semantics
     ref={ref}
-    className={cn("text-2xl font-semibold leading-none tracking-tight", className)}
+    className={`text-sm font-medium text-slate-800 ${className || ""}`} // Changed default to text-sm font-medium for dashboard cards
     {...props} />
-))
-CardTitle.displayName = "CardTitle"
+));
+CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <div
+  <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={`text-sm text-slate-500 ${className || ""}`}
     {...props} />
-))
-CardDescription.displayName = "CardDescription"
+));
+CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+  <div ref={ref} className={`p-5 sm:p-6 ${className || ""}`} {...props} />
+));
+CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={`p-5 sm:p-6 border-t border-slate-100 flex items-center ${className || ""}`}
     {...props} />
-))
-CardFooter.displayName = "CardFooter"
+));
+CardFooter.displayName = "CardFooter";
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };

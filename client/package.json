@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.2.4",
     "@radix-ui/react-slot": "^1.2.2",
+    "@shadcn/ui": "^0.0.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "darxixpress": "file:",
@@ -32,7 +34,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "^3.4.17",
     "vite": "^5.4.19"
   }
 }
