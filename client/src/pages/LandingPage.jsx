@@ -4,8 +4,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import Footer from '@/components/ui/Footer';
 import { LucideShoppingBag, LucideScissors, LucideStar } from 'lucide-react';
 import heroBg from '@/assets/images/hero-bg.jpg';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+
+    const handleGetStartedClick = () => {
+        navigate('/login'); // Redirects to the login page when the button is clicked
+    };
+
     return (
         <div>
             {/* Hero Section */}
@@ -21,7 +28,7 @@ export default function LandingPage() {
                     <p className="text-xl sm:text-2xl font-light mb-10 text-gray-200">
                         Tailoring made simple. Get your custom outfits tailored perfectly.
                     </p>
-                    <Button size="lg" className="bg-indigo-600 text-white rounded-full px-10 py-3 shadow-2xl hover:bg-indigo-700 transition-all">
+                    <Button size="lg" className="bg-indigo-600 text-white rounded-full px-10 py-3 shadow-2xl hover:bg-indigo-700 transition-all" onClick={handleGetStartedClick}>
                         Get Started
                     </Button>
                 </div>
