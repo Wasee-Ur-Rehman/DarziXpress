@@ -8,10 +8,39 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        console.log({ email, password });
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Store the token if needed
+                localStorage.setItem('authToken', data.token);
+
+                // Navigate based on user type
+                if (data.userType === 'customer') {
+                    navigate('/customer');
+                } else if (data.userType === 'tailor') {
+                    navigate('/tailor');
+                }
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('Server error, please try again later.');
+        }
     };
+
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6 lg:p-8">
