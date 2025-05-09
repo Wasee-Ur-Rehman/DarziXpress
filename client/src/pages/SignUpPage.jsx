@@ -25,36 +25,57 @@ export default function SignupPage() {
     const [passwordError, setPasswordError] = useState('');
     const [phoneError, setPhoneError] = useState(''); // Phone number error state
     const [cityError, setCityError] = useState(''); // City error state
+    const [userType, setUserType] = useState('customer');
 
-    const handleSignup = (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
             setPasswordError("Passwords don't match!");
             return;
-        } else {
-            setPasswordError('');
         }
 
-        // Phone number validation (must be 11 digits)
         if (phoneNumber.length !== 11) {
             setPhoneError("Phone number must be 11 digits.");
             return;
-        } else {
-            setPhoneError('');
         }
 
-        // City validation
         if (!city) {
             setCityError("Please select your city.");
             return;
-        } else {
-            setCityError('');
         }
 
-        // Handle signup logic here
-        console.log({ fullName, email, password, confirmPassword, phoneNumber, city });
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName,
+                    email,
+                    password,
+                    phoneNumber,
+                    city,
+                    userType,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log(data.message);
+                navigate('/login');
+            } else {
+                console.error(data.message);
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error during signup:', error);
+            alert('Server error, please try again later.');
+        }
     };
+
 
     const handleConfirmPasswordChange = (e) => {
         setConfirmPassword(e.target.value);
@@ -143,6 +164,19 @@ export default function SignupPage() {
                                 ))}
                             </select>
                             {cityError && <p className="text-red-500 text-xs mt-1">{cityError}</p>} {/* Show error message */}
+                        </div>
+                        <div>
+                            <label htmlFor="userType" className="block text-sm font-medium text-gray-700 mb-1.5">User Type</label>
+                            <select
+                                id="userType"
+                                value={userType}
+                                onChange={(e) => setUserType(e.target.value)}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                required
+                            >
+                                <option value="customer">Customer</option>
+                                <option value="tailor">Tailor</option>
+                            </select>
                         </div>
 
                         {/* Password Field */}
