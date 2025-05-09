@@ -51,7 +51,7 @@ const CustomerNavbar = () => {
     const dropdownItems = [
         { name: 'Profile Info', path: '/customer/profile', icon: <UserCircle size={18} /> },
         { name: 'Measurements', path: '/customer/measurements', icon: <Ruler size={18} /> },
-        { name: 'Settings', path: '/customer/settings', icon: <Settings size={18} /> },
+        { name: 'Change Password', path: '/customer/changePassword', icon: <Settings size={18} /> },
     ];
 
     // Mock user data - replace with actual data from context or props

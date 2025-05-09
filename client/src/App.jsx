@@ -29,7 +29,7 @@ const App = () => {
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
           <Route path="measurements" element={<Measurements />} />
-          <Route path="change-password" element={<ChangePassword />} />
+          <Route path="changePassword" element={<ChangePassword />} />
           <Route path="listing" element={<TailorListing />} />
         </Route>
       </Routes>
