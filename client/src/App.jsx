@@ -24,6 +24,7 @@ import TailorMeasurements from './pages/tailor/TailorMeasurements.jsx';
 import MyListings from './pages/tailor/MyListings.jsx';
 import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
 import MyEarnings from './pages/tailor/MyEarnings.jsx';
+import OrderDetails from './pages/tailor/OrderDetails.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
@@ -56,6 +57,7 @@ const App = () => {
           <Route path="listings" element={<MyListings />} />
           <Route path="post-service" element={<PostServiceForm />} />
           <Route path="earnings" element={<MyEarnings />} />
+          <Route path="orders/:id" element={<OrderDetails />} />
           <Route path="changePassword" element={<ChangePassword />} />
           <Route path="profile" element={<Profile />} />
         </Route>

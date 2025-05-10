@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Box, Edit } from 'lucide-react';
+import { Search, Box, Eye } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -143,13 +143,16 @@ const ManageOrders = () => {
                                                             </Button>
 
                                                         </TableCell>
+
                                                         <TableCell>
                                                             <Link to={`/orders/${order.id}`}>
-                                                                <Button variant="ghost" size="sm" className="hover:bg-gray-100">
-                                                                    <Edit className="w-4 h-4" />
+                                                                <Button variant="ghost" size="sm" className="hover:bg-gray-100 flex items-center">
+                                                                    <Eye className="w-4 h-4 mr-1" />
+                                                                    View
                                                                 </Button>
                                                             </Link>
                                                         </TableCell>
+
                                                     </TableRow>
                                                 ))
                                             ) : (
