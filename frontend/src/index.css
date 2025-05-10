@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* {
+    font-family: 'Poppins', sans-serif;
+}
+/* 
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+.navbar .nav-links {
+  display: flex;
+  justify-content: space-evenly;
+  flex-grow: 1;
+} */
