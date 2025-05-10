@@ -10,8 +10,22 @@ import CustomerDashboard from './pages/customer/CustomerDashboard.jsx';   // Imp
 import Orders from './pages/customer/Orders';         // Import Orders
 import Profile from './pages/customer/ProfileInfo'; // Import Profile
 import Measurements from './pages/customer/Measurements'; // Import Measurements
-import ChangePassword from './pages/customer/ChangePassword'; // Import ChangePassword
 import TailorListing from './pages/customer/TailorListing'; // Import TailorListing
+
+import ChangePassword from './pages/ChangePassword.jsx'; // Import ChangePassword
+
+
+//tailor imports
+// Tailor Layout and Pages
+import TailorLayout from './layouts/TailorLayout.jsx';
+import TailorDashboard from './pages/tailor/TailorDashboard.jsx';
+import ManageOrders from './pages/tailor/ManageOrders.jsx';
+import TailorMeasurements from './pages/tailor/TailorMeasurements.jsx';
+import MyListings from './pages/tailor/MyListings.jsx';
+import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
+import MyEarnings from './pages/tailor/MyEarnings.jsx';
+// import TailorProfile from './pages/tailor/TailorProfile.jsx';
+// import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
 const App = () => {
   return (
@@ -31,6 +45,19 @@ const App = () => {
           <Route path="measurements" element={<Measurements />} />
           <Route path="changePassword" element={<ChangePassword />} />
           <Route path="listing" element={<TailorListing />} />
+        </Route>
+
+          {/* Tailor Routes */}
+        <Route path="/tailor" element={<TailorLayout />}>
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<TailorDashboard />} />
+          <Route path="orders" element={<ManageOrders />} />
+          <Route path="measurements" element={<TailorMeasurements />} />
+          <Route path="listings" element={<MyListings />} />
+          <Route path="post-service" element={<PostServiceForm />} />
+          <Route path="earnings" element={<MyEarnings />} />
+          <Route path="changePassword" element={<ChangePassword />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>
