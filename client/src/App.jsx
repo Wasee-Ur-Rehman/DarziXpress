@@ -28,6 +28,7 @@ import OrderDetails from './pages/tailor/OrderDetails.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
+<<<<<<< HEAD
 // src/App.jsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
@@ -37,6 +38,8 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import ManageProfile from './pages/ManageProfile';
 
+=======
+>>>>>>> 51c86dedb60011d3082a2191d7d30ec7a2659655
 const App = () => {
   return (
     <Router>
