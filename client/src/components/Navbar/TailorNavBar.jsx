@@ -42,7 +42,6 @@ const TailorNavbar = () => {
     const navItems = [
         { name: 'Dashboard', path: '/tailor/dashboard', icon: <LayoutDashboard size={18} /> },
         { name: 'Orders', path: '/tailor/orders', icon: <Package size={18} /> },
-        { name: 'Measurements', path: '/tailor/measurements', icon: <Ruler size={18} /> },
         { name: 'My Listings', path: '/tailor/listings', icon: <List size={18} /> },
         { name: 'Earnings', path: '/tailor/earnings', icon: <Wallet size={18} /> },
     ];
@@ -51,9 +50,6 @@ const TailorNavbar = () => {
         { name: 'Profile Info', path: '/tailor/profile', icon: <UserCircle size={18} /> },
         { name: 'Change Password', path: '/tailor/changePassword', icon: <Settings size={18} /> },
     ];
-
-    const tailorName = "Ahmed Tailor";
-    const tailorEmail = "ahmed.tailor@example.com";
 
     return (
         <nav className="bg-white text-slate-700 shadow-md sticky top-0 z-50">
@@ -100,10 +96,7 @@ const TailorNavbar = () => {
 
                         {isDropdownOpen && (
                             <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 py-1 z-20 origin-top-right">
-                                <div className="px-4 py-3 border-b border-slate-100">
-                                    <p className="text-sm font-semibold text-slate-800 truncate">{tailorName}</p>
-                                    <p className="text-xs text-slate-500 truncate">{tailorEmail}</p>
-                                </div>
+
                                 <div className="py-1">
                                     {dropdownItems.map((item) => (
                                         <Link

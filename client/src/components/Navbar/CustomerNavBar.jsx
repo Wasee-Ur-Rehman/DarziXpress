@@ -54,10 +54,6 @@ const CustomerNavbar = () => {
         { name: 'Change Password', path: '/customer/changePassword', icon: <Settings size={18} /> },
     ];
 
-    // Mock user data - replace with actual data from context or props
-    const userName = "Ayesha Khan";
-    const userEmail = "ayesha.k@example.com";
-
     return (
         <nav className="bg-white text-slate-700 shadow-md sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,10 +97,7 @@ const CustomerNavbar = () => {
                                 aria-orientation="vertical"
                                 aria-labelledby="user-menu-button"
                             >
-                                <div className="px-4 py-3 border-b border-slate-100">
-                                    <p className="text-sm font-semibold text-slate-800 truncate">{userName}</p>
-                                    <p className="text-xs text-slate-500 truncate">{userEmail}</p>
-                                </div>
+
                                 <div className="py-1">
                                     {dropdownItems.map((item) => (
                                         <Link
