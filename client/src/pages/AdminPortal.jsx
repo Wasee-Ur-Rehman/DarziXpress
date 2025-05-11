@@ -205,7 +205,6 @@ const AdminPortal = () => {
     { name: 'Users', path: 'users', icon: <Users className="h-5 w-5" /> },
     { name: 'Registration Requests', path: 'registration-requests', icon: <UserPlus className="h-5 w-5" /> },
     { name: 'User Activity', path: 'user-activity', icon: <Check className="h-5 w-5" /> },
-    { name: 'Settings', path: 'settings', icon: <Settings className="h-5 w-5" /> },
   ];
 
   const renderDashboard = () => (
@@ -573,19 +572,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  const renderSettings = () => (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage your admin portal preferences.</p>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-medium mb-4">Portal Settings</h2>
-        <p className="text-gray-500">Settings content would go here.</p>
-      </div>
-    </div>
-  );
 
   const renderContent = () => {
     switch (activeSection) {
