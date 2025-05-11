@@ -10,7 +10,6 @@ const AdminPortal = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  // Mock data for dashboard stats
   const stats = [
     { id: 1, title: 'Total Users', value: '2,845', trend: '+12.5%', icon: '👤', color: 'bg-blue-500' },
     { id: 2, title: 'Active Tailors', value: '842', trend: '+7.2%', icon: '🧵', color: 'bg-green-500' },
@@ -18,7 +17,6 @@ const AdminPortal = () => {
     { id: 4, title: 'Pending Requests', value: '24', trend: '-2.1%', icon: '📋', color: 'bg-amber-500' },
   ];
 
-  // Mock data for revenue chart
   const revenueData = [
     { name: 'Jan', revenue: 4000 },
     { name: 'Feb', revenue: 6000 },
@@ -29,7 +27,6 @@ const AdminPortal = () => {
     { name: 'Jul', revenue: 12000 },
   ];
 
-  // Mock data for service category chart
   const categoryData = [
     { name: 'Wedding', value: 30 },
     { name: 'Formal', value: 25 },
@@ -38,7 +35,6 @@ const AdminPortal = () => {
     { name: 'Kids', value: 10 },
   ];
 
-  // Mock data for users
   const [users] = useState([
     {
       id: 1,
@@ -87,7 +83,6 @@ const AdminPortal = () => {
     },
   ]);
 
-  // Mock data for registration requests
   const [requests, setRequests] = useState([
     {
       id: 1,
@@ -118,7 +113,6 @@ const AdminPortal = () => {
     },
   ]);
 
-  // Mock data for user activity
   const [activities] = useState([
     {
       id: 1,
@@ -185,7 +179,6 @@ const AdminPortal = () => {
     },
   ]);
 
-  // Handler for approving registration requests
   const handleApprove = (id) => {
     setRequests(requests.map(request => 
       request.id === id ? { ...request, status: 'Approved' } : request
@@ -196,7 +189,6 @@ const AdminPortal = () => {
     });
   };
 
-  // Handler for rejecting registration requests
   const handleReject = (id) => {
     setRequests(requests.map(request => 
       request.id === id ? { ...request, status: 'Rejected' } : request
@@ -208,7 +200,6 @@ const AdminPortal = () => {
     });
   };
 
-  // Navigation items
   const navItems = [
     { name: 'Dashboard', path: 'dashboard', icon: <ChartBar className="h-5 w-5" /> },
     { name: 'Users', path: 'users', icon: <Users className="h-5 w-5" /> },
@@ -217,7 +208,6 @@ const AdminPortal = () => {
     { name: 'Settings', path: 'settings', icon: <Settings className="h-5 w-5" /> },
   ];
 
-  // Render Dashboard section
   const renderDashboard = () => (
     <div className="space-y-6">
       <div className="mb-6">
@@ -225,7 +215,6 @@ const AdminPortal = () => {
         <p className="text-gray-600">Here's what's happening with your platform today.</p>
       </div>
       
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <div key={stat.id} className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
@@ -245,7 +234,6 @@ const AdminPortal = () => {
         ))}
       </div>
       
-      {/* Revenue Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md border border-gray-100">
           <h2 className="text-lg font-medium mb-4">Revenue Overview</h2>
@@ -263,7 +251,6 @@ const AdminPortal = () => {
           </div>
         </div>
         
-        {/* Category Distribution */}
         <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
           <h2 className="text-lg font-medium mb-4">Service Categories</h2>
           <div className="h-80">
@@ -281,7 +268,6 @@ const AdminPortal = () => {
         </div>
       </div>
       
-      {/* Recent Activity */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100">
         <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
         <div className="space-y-4">
@@ -301,7 +287,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  // Render Users section
   const renderUsers = () => (
     <div>
       <div className="mb-6">
@@ -410,7 +395,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  // Render Registration Requests section
   const renderRegistrationRequests = () => (
     <div>
       <div className="mb-6">
@@ -516,7 +500,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  // Render User Activity section
   const renderUserActivity = () => (
     <div>
       <div className="mb-6">
@@ -616,7 +599,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  // Render Settings section (placeholder)
   const renderSettings = () => (
     <div>
       <div className="mb-6">
@@ -631,7 +613,6 @@ const AdminPortal = () => {
     </div>
   );
 
-  // Render the active section content
   const renderContent = () => {
     switch (activeSection) {
       case 'users':
@@ -703,10 +684,7 @@ const AdminPortal = () => {
           </div>
         </div>
       </div>
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <header className="bg-white border-b p-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-800">
@@ -730,7 +708,6 @@ const AdminPortal = () => {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-auto bg-gray-50 p-6">
           {renderContent()}
         </main>
