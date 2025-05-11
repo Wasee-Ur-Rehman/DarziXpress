@@ -24,6 +24,7 @@ import Dashboard from './pages/admin/Dashboard.jsx';
 import Privacy from './pages/Privacy.jsx';
 import Terms from './pages/Terms.jsx';
 import ManageProfile from './pages/admin/ManageProfile.jsx';
+import AdminPortal from './pages/AdminPortal.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
@@ -65,7 +66,7 @@ const App = () => {
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<Dashboard />}>
+        <Route path="/admin" element={<AdminPortal />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
