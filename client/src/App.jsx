@@ -26,6 +26,8 @@ import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
 import MyEarnings from './pages/tailor/MyEarnings.jsx';
 import OrderDetails from './pages/tailor/OrderDetails.jsx';
 import Dashboard from './pages/admin/Dashboard.jsx';
+import Privacy from './pages/Privacy.jsx';
+import Terms from './pages/Terms.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
@@ -38,6 +40,8 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
 
         {/* Customer Routes */}
         <Route path="/customer/*" element={<CustomerLayout />}>
