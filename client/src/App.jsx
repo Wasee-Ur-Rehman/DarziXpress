@@ -24,8 +24,13 @@ import MyListings from './pages/tailor/MyListings.jsx';
 import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
 import MyEarnings from './pages/tailor/MyEarnings.jsx';
 import OrderDetails from './pages/tailor/OrderDetails.jsx';
-// import TailorProfile from './pages/tailor/TailorProfile.jsx';
-// import TailorSettings from './pages/tailor/TailorSettings.jsx';
+
+// Admin Layout and Pages
+import AdminLayout from './layouts/AdminLayout.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import CustomerManagement from './pages/admin/CustomerManagement.jsx';
+import TailorManagement from './pages/admin/TailorManagement.jsx';
+import AdminEarnings from './pages/admin/AdminEarnings.jsx';
 
 import { AuthProvider } from './context/AuthContext';
 
@@ -62,9 +67,18 @@ const App = () => {
             <Route path="changePassword" element={<ChangePassword />} />
             <Route path="edit-service/:serviceId" element={<PostServiceForm />} />
             <Route path="profile" element={<Profile />} />
-
-
           </Route>
+
+           {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="customers" element={<CustomerManagement />} />
+            <Route path="tailors" element={<TailorManagement />} />
+            <Route path="earnings" element={<AdminEarnings />} />
+            <Route path="changePassword" element={<ChangePassword />} />
+
+            </Route>
         </Routes>
       </Router>
     </AuthProvider>
