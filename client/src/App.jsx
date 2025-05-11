@@ -25,21 +25,11 @@ import MyListings from './pages/tailor/MyListings.jsx';
 import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
 import MyEarnings from './pages/tailor/MyEarnings.jsx';
 import OrderDetails from './pages/tailor/OrderDetails.jsx';
+import Dashboard from './pages/admin/Dashboard.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
-<<<<<<< HEAD
-// src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import AdminLayout from './layouts/AdminLayout';
-import Dashboard from './pages/Dashboard';
-import Orders from './pages/Orders';
-import Profile from './pages/Profile';
-import ManageProfile from './pages/ManageProfile';
 
-=======
->>>>>>> 51c86dedb60011d3082a2191d7d30ec7a2659655
 const App = () => {
   return (
     <Router>
@@ -50,8 +40,8 @@ const App = () => {
         <Route path="/signup" element={<SignUpPage />} />
 
         {/* Customer Routes */}
-        <Route path="/customer" element={<CustomerLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
+        <Route path="/customer/*" element={<CustomerLayout />}>
+          <Route path="/" element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
@@ -60,9 +50,9 @@ const App = () => {
           <Route path="listing" element={<TailorListing />} />
         </Route>
 
-          {/* Tailor Routes */}
-        <Route path="/tailor" element={<TailorLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
+        {/* Tailor Routes */}
+        <Route path="/tailor/*" element={<TailorLayout />}>
+          <Route path="/" element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<TailorDashboard />} />
           <Route path="orders" element={<ManageOrders />} />
           <Route path="measurements" element={<TailorMeasurements />} />
@@ -74,12 +64,13 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        <Route path="/admin" element={<AdminLayout />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="orders" element={<Orders />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="manage-profile" element={<ManageProfile />} />
-      </Route>
+        {/* Admin Routes */}
+        <Route path="/admin/*" element={<Dashboard />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="manage-profile" element={<ManageProfile />} />
+        </Route>
       </Routes>
     </Router>
   );
