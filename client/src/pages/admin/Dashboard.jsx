@@ -171,7 +171,6 @@ const Dashboard = () => {
       {/* Profit Chart */}
       <section className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-4">Profit Trend</h3>
-
       </section>
     </div>
   );

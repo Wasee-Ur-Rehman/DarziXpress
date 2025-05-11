@@ -5,18 +5,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/landingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
-import CustomerLayout from './layouts/CustomerLayout';  // Import CustomerLayout
-import CustomerDashboard from './pages/customer/CustomerDashboard.jsx';   // Import Dashboard
-import Orders from './pages/customer/Orders';         // Import Orders
-import Profile from './pages/customer/ProfileInfo'; // Import Profile
-import Measurements from './pages/customer/Measurements'; // Import Measurements
-import TailorListing from './pages/customer/TailorListing'; // Import TailorListing
-
-import ChangePassword from './pages/ChangePassword.jsx'; // Import ChangePassword
-
-
-//tailor imports
-// Tailor Layout and Pages
+import CustomerLayout from './layouts/CustomerLayout';
+import CustomerDashboard from './pages/customer/CustomerDashboard.jsx'
+import Orders from './pages/customer/Orders';
+import Profile from './pages/customer/ProfileInfo'
+import Measurements from './pages/customer/Measurements';
+import TailorListing from './pages/customer/TailorListing';
+import ChangePassword from './pages/ChangePassword.jsx';
 import TailorLayout from './layouts/TailorLayout.jsx';
 import TailorDashboard from './pages/tailor/TailorDashboard.jsx';
 import ManageOrders from './pages/tailor/ManageOrders.jsx';
