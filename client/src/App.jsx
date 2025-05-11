@@ -46,7 +46,7 @@ const App = () => {
 
         {/* Customer Routes */}
         <Route path="/customer" element={<CustomerLayout />}>
-          <Route path="/" element={<Navigate to="dashboard" />} />
+          <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
@@ -57,7 +57,7 @@ const App = () => {
 
         {/* Tailor Routes */}
         <Route path="/tailor" element={<TailorLayout />}>
-          <Route path="/" element={<Navigate to="dashboard" />} />
+          <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<TailorDashboard />} />
           <Route path="orders" element={<ManageOrders />} />
           <Route path="measurements" element={<TailorMeasurements />} />
