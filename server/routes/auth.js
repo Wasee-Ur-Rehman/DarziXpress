@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/schemas/userSchema.js';
 import dotenv from 'dotenv';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 dotenv.config();
 
@@ -89,6 +90,42 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error logging in' });
+    }
+});
+
+router.post('/change-password', authMiddleware, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current password and new password are required.' });
+    }
+
+    if (newPassword.length < 6) { // Or your password policy
+        return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
+    }
+
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            // This should not happen if authMiddleware passed
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect current password.' });
+        }
+
+        // Hash new password
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        res.json({ message: 'Password changed successfully.' });
+
+    } catch (error) {
+        console.error("Error changing password:", error);
+        res.status(500).json({ message: 'Server error changing password.' });
     }
 });
 

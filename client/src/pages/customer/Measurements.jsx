@@ -6,23 +6,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-// import { Textarea } from '@/components/ui/textarea'; // If you want a notes field
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
-// Initial mock data - this would typically come from a backend or global state
-const initialMockMeasurements = [
-    { id: 'm1', name: 'Formal Shirt Profile', lastUpdated: '2023-10-15', details: { chest: '40', waist: '32', shoulder: '18', sleeveLength: '25', notes: 'Slim fit preference' } },
-    { id: 'm2', name: 'Casual Trousers', lastUpdated: '2023-09-20', details: { waist: '32', inseam: '30', hip: '38', thigh: '22', notes: 'Comfort fit' } },
-    { id: 'm3', name: 'Wedding Sherwani', lastUpdated: '2024-01-05', details: { chest: '41', waist: '33', shoulder: '18.5', length: '42', notes: 'Needs extra room for kurta underneath' } },
-];
-
+// MeasurementForm component remains mostly the same, but 'id' handling will be different
 const MeasurementForm = ({ initialData, onSubmit, onCancel }) => {
     const [profileName, setProfileName] = useState(initialData?.name || '');
+    // ... other form fields state ...
     const [chest, setChest] = useState(initialData?.details?.chest || '');
     const [waist, setWaist] = useState(initialData?.details?.waist || '');
     const [shoulder, setShoulder] = useState(initialData?.details?.shoulder || '');
     const [sleeveLength, setSleeveLength] = useState(initialData?.details?.sleeveLength || '');
     const [inseam, setInseam] = useState(initialData?.details?.inseam || '');
     const [notes, setNotes] = useState(initialData?.details?.notes || '');
+
+
+    useEffect(() => {
+        // Reset form when initialData changes (e.g., when switching from add to edit)
+        setProfileName(initialData?.name || '');
+        setChest(initialData?.details?.chest || '');
+        setWaist(initialData?.details?.waist || '');
+        setShoulder(initialData?.details?.shoulder || '');
+        setSleeveLength(initialData?.details?.sleeveLength || '');
+        setInseam(initialData?.details?.inseam || '');
+        setNotes(initialData?.details?.notes || '');
+    }, [initialData]);
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -31,9 +39,9 @@ const MeasurementForm = ({ initialData, onSubmit, onCancel }) => {
             return;
         }
         const measurementData = {
-            id: initialData?.id || `m${Date.now()}`, // Generate new ID if not editing
+            // No ID generation here, backend handles it for new profiles
+            // For updates, initialData will have the _id from MongoDB
             name: profileName,
-            lastUpdated: new Date().toISOString().split('T')[0], // YYYY-MM-DD
             details: {
                 ...(chest && { chest }),
                 ...(waist && { waist }),
@@ -43,9 +51,10 @@ const MeasurementForm = ({ initialData, onSubmit, onCancel }) => {
                 ...(notes && { notes }),
             },
         };
-        onSubmit(measurementData);
+        onSubmit(measurementData, initialData?._id); // Pass ID if editing
     };
 
+    // ... MeasurementForm JSX (mostly the same) ...
     return (
         <Card className="mb-6">
             <CardHeader>
@@ -69,7 +78,6 @@ const MeasurementForm = ({ initialData, onSubmit, onCancel }) => {
                     </div>
                     <div>
                         <Label htmlFor="notes">Notes (Optional)</Label>
-                        {/* Replace with Textarea if you have one: <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Preferences like slim fit, specific style details, etc." /> */}
                         <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Preferences, slim fit, etc." />
                     </div>
                     <div className="flex justify-end space-x-3 pt-2">
@@ -83,58 +91,103 @@ const MeasurementForm = ({ initialData, onSubmit, onCancel }) => {
 };
 
 
-const MeasurementsPage = () => {
+const Measurements = () => {
     const [measurements, setMeasurements] = useState([]);
     const [showForm, setShowForm] = useState(false);
-    const [editingMeasurement, setEditingMeasurement] = useState(null); // null or measurement object
+    const [editingMeasurement, setEditingMeasurement] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { authToken } = useAuth();
 
-    // Load initial data (e.g., from localStorage or API in a real app)
-    useEffect(() => {
-        // For this example, we use the initial mock data.
-        // In a real app, you might fetch this or get it from a global state.
-        // To simulate persistence for dashboard, one could use localStorage.
-        const storedMeasurements = localStorage.getItem('userMeasurements');
-        if (storedMeasurements) {
-            setMeasurements(JSON.parse(storedMeasurements));
-        } else {
-            setMeasurements(initialMockMeasurements);
-            localStorage.setItem('userMeasurements', JSON.stringify(initialMockMeasurements));
+    const fetchMeasurements = async () => {
+        if (!authToken) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/measurements', {
+                headers: { 'Authorization': `Bearer ${authToken}` },
+            });
+            if (!response.ok) throw new Error('Failed to fetch measurements');
+            const data = await response.json();
+            setMeasurements(data);
+        } catch (err) {
+            setError(err.message);
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
-    }, []);
-
-    // Update localStorage whenever measurements change
-    useEffect(() => {
-        if (measurements.length > 0 || localStorage.getItem('userMeasurements')) { // only update if not initial empty
-            localStorage.setItem('userMeasurements', JSON.stringify(measurements));
-        }
-    }, [measurements]);
-
-
-    const handleAddOrUpdateMeasurement = (data) => {
-        if (editingMeasurement) {
-            setMeasurements(measurements.map(m => m.id === data.id ? data : m));
-        } else {
-            setMeasurements([data, ...measurements]); // Add new to the top
-        }
-        setShowForm(false);
-        setEditingMeasurement(null);
     };
 
-    const handleDeleteMeasurement = (id) => {
+    useEffect(() => {
+        fetchMeasurements();
+    }, [authToken]);
+
+
+    const handleAddOrUpdateMeasurement = async (data, profileIdToUpdate) => {
+        if (!authToken) {
+            alert("You must be logged in to save measurements.");
+            return;
+        }
+        const url = profileIdToUpdate ? `/api/measurements/${profileIdToUpdate}` : '/api/measurements';
+        const method = profileIdToUpdate ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Failed to ${profileIdToUpdate ? 'update' : 'add'} measurement`);
+            }
+            // const savedProfile = await response.json(); // The new/updated profile
+            // Instead of relying on returned data, just refetch for simplicity to ensure UI consistency
+            fetchMeasurements(); // Re-fetch all measurements to update the list
+            setShowForm(false);
+            setEditingMeasurement(null);
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+            console.error(err);
+        }
+    };
+
+    const handleDeleteMeasurement = async (id) => {
+        if (!authToken) {
+            alert("You must be logged in to delete measurements.");
+            return;
+        }
         if (window.confirm("Are you sure you want to delete this measurement profile?")) {
-            setMeasurements(measurements.filter(m => m.id !== id));
+            try {
+                const response = await fetch(`/api/measurements/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to delete measurement');
+                }
+                fetchMeasurements(); // Re-fetch
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+                console.error(err);
+            }
         }
     };
 
+    // ... other handlers (handleEditMeasurement, handleToggleForm, handleCancelForm) remain similar ...
     const handleEditMeasurement = (measurement) => {
-        setEditingMeasurement(measurement);
+        setEditingMeasurement(measurement); // Pass the full measurement object (which includes _id)
         setShowForm(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to show form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleToggleForm = () => {
         setShowForm(!showForm);
-        if (showForm) { // If form was open and is now closing
+        if (showForm) {
             setEditingMeasurement(null);
         }
     };
@@ -144,6 +197,12 @@ const MeasurementsPage = () => {
         setEditingMeasurement(null);
     }
 
+
+    if (loading) return <div className="p-6 text-center">Loading measurements...</div>;
+    if (error) return <div className="p-6 text-center text-red-600">Error: {error}</div>;
+
+    // ... MeasurementsPage JSX (mostly the same, but uses _id from MongoDB for keys/delete) ...
+    // Ensure you use `m._id` for keys when mapping over `measurements` if your backend returns it
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
@@ -165,6 +224,7 @@ const MeasurementsPage = () => {
 
                 {measurements.length === 0 && !showForm ? (
                     <Card className="text-center py-12">
+                        {/* ... no measurements display ... */}
                         <CardContent>
                             <Ruler size={48} className="mx-auto text-slate-400 mb-4" />
                             <p className="text-xl font-semibold text-slate-700">No Measurement Profiles Yet</p>
@@ -177,17 +237,17 @@ const MeasurementsPage = () => {
                 ) : (
                     <div className="space-y-6">
                         {measurements.map((m) => (
-                            <Card key={m.id}>
+                            <Card key={m._id}> {/* Use m._id from MongoDB */}
                                 <CardHeader className="flex flex-row items-start justify-between">
                                     <div>
                                         <CardTitle>{m.name}</CardTitle>
-                                        <CardDescription>Last Updated: {m.lastUpdated}</CardDescription>
+                                        <CardDescription>Last Updated: {new Date(m.lastUpdated).toLocaleDateString()}</CardDescription>
                                     </div>
                                     <div className="flex space-x-2">
                                         <Button variant="outline" size="sm" onClick={() => handleEditMeasurement(m)}>
                                             <Edit size={14} className="mr-1.5" /> Edit
                                         </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteMeasurement(m.id)}>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteMeasurement(m._id)}> {/* Use m._id */}
                                             <Trash2 size={14} className="mr-1.5" /> Delete
                                         </Button>
                                     </div>
@@ -195,10 +255,10 @@ const MeasurementsPage = () => {
                                 <CardContent>
                                     <dl className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                                         {Object.entries(m.details).map(([key, value]) => (
-                                            value && ( // Only display if value exists
+                                            value && (
                                                 <div key={key}>
-                                                    <dt className="font-medium text-slate-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</dt> {/* Add space before capital letters */}
-                                                    <dd className="text-slate-800">{value} {typeof value === 'number' || !isNaN(parseFloat(value)) && key !== 'notes' ? 'inches' : ''}</dd>
+                                                    <dt className="font-medium text-slate-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</dt>
+                                                    <dd className="text-slate-800">{value} {typeof value === 'number' || (!isNaN(parseFloat(value)) && key !== 'notes') ? 'inches' : ''}</dd>
                                                 </div>
                                             )
                                         ))}
@@ -213,4 +273,4 @@ const MeasurementsPage = () => {
     );
 };
 
-export default MeasurementsPage;
+export default Measurements;

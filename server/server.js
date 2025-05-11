@@ -4,6 +4,9 @@ import connectDB from './utils/db.js';
 import authRoutes from './routes/auth.js';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import measurementRoutes from './routes/measurementRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -22,6 +25,9 @@ app.use(express.json());
 
 // Use the auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/measurements', measurementRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

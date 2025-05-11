@@ -1,6 +1,7 @@
 // /pages/customer/ChangePasswordPage.jsx
 import React, { useState } from 'react';
-import { Lock, KeyRound } from 'lucide-react';
+import { Lock, KeyRound, Loader2 } from 'lucide-react'; // Added Loader2
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,41 +9,62 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const ChangePasswordPage = () => {
+    const { authToken } = useAuth(); // Get token for API call
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [message, setMessage] = useState({ type: '', text: '' }); // type: 'success' or 'error'
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage({ type: '', text: '' }); // Clear previous message
+        setMessage({ type: '', text: '' });
+        setLoading(true);
 
         if (!currentPassword || !newPassword || !confirmPassword) {
             setMessage({ type: 'error', text: 'All fields are required.' });
+            setLoading(false);
             return;
         }
         if (newPassword.length < 6) {
             setMessage({ type: 'error', text: 'New password must be at least 6 characters long.' });
+            setLoading(false);
             return;
         }
         if (newPassword !== confirmPassword) {
             setMessage({ type: 'error', text: 'New password and confirm password do not match.' });
+            setLoading(false);
             return;
         }
 
-        // --- Mock Password Change Logic ---
-        // In a real app, you'd make an API call here.
-        // For this example, we'll just simulate success/failure.
-        if (currentPassword === "oldpassword123") { // Simulate correct current password
-            console.log("Password change requested:", { currentPassword, newPassword });
-            setMessage({ type: 'success', text: 'Password changed successfully! (Mock)' });
+        try {
+            const response = await fetch('/api/auth/change-password', { // Or your chosen endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || `Error: ${response.status}`);
+            }
+
+            setMessage({ type: 'success', text: result.message || 'Password changed successfully!' });
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
-        } else {
-            setMessage({ type: 'error', text: 'Incorrect current password. (Mock - try "oldpassword123")' });
+            // Optionally, you might want to log the user out or re-issue a token if your security policy requires it
+            // For now, just show success message.
+        } catch (err) {
+            console.error("ChangePasswordPage error:", err);
+            setMessage({ type: 'error', text: err.message || 'Failed to change password.' });
+        } finally {
+            setLoading(false);
         }
-        // --- End Mock Logic ---
     };
 
     return (
@@ -66,6 +88,7 @@ const ChangePasswordPage = () => {
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                             <div>
@@ -76,6 +99,7 @@ const ChangePasswordPage = () => {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                             <div>
@@ -86,17 +110,19 @@ const ChangePasswordPage = () => {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
+                                    disabled={loading}
                                 />
                             </div>
 
                             {message.text && (
-                                <p className={`text-sm ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                                <p className={`text-sm p-3 rounded-md text-center ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                                     {message.text}
                                 </p>
                             )}
 
-                            <Button type="submit" className="w-full">
-                                <Lock size={16} className="mr-2" /> Update Password
+                            <Button type="submit" className="w-full" disabled={loading}>
+                                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock size={16} className="mr-2" />}
+                                {loading ? 'Updating...' : 'Update Password'}
                             </Button>
                         </form>
                     </CardContent>

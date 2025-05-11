@@ -28,41 +28,45 @@ import OrderDetails from './pages/tailor/OrderDetails.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
+import { AuthProvider } from './context/AuthContext';
+
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
 
-        {/* Customer Routes */}
-        <Route path="/customer" element={<CustomerLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
-          <Route path="dashboard" element={<CustomerDashboard />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="measurements" element={<Measurements />} />
-          <Route path="changePassword" element={<ChangePassword />} />
-          <Route path="listing" element={<TailorListing />} />
-        </Route>
+          {/* Customer Routes */}
+          <Route path="/customer" element={<CustomerLayout />}>
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<CustomerDashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="measurements" element={<Measurements />} />
+            <Route path="changePassword" element={<ChangePassword />} />
+            <Route path="listing" element={<TailorListing />} />
+          </Route>
 
           {/* Tailor Routes */}
-        <Route path="/tailor" element={<TailorLayout />}>
-          <Route index element={<Navigate to="dashboard" />} />
-          <Route path="dashboard" element={<TailorDashboard />} />
-          <Route path="orders" element={<ManageOrders />} />
-          <Route path="measurements" element={<TailorMeasurements />} />
-          <Route path="listings" element={<MyListings />} />
-          <Route path="post-service" element={<PostServiceForm />} />
-          <Route path="earnings" element={<MyEarnings />} />
-          <Route path="orders/:id" element={<OrderDetails />} />
-          <Route path="changePassword" element={<ChangePassword />} />
-          <Route path="profile" element={<Profile />} />
-        </Route>
-      </Routes>
-    </Router>
+          <Route path="/tailor" element={<TailorLayout />}>
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<TailorDashboard />} />
+            <Route path="orders" element={<ManageOrders />} />
+            <Route path="measurements" element={<TailorMeasurements />} />
+            <Route path="listings" element={<MyListings />} />
+            <Route path="post-service" element={<PostServiceForm />} />
+            <Route path="earnings" element={<MyEarnings />} />
+            <Route path="orders/:id" element={<OrderDetails />} />
+            <Route path="changePassword" element={<ChangePassword />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
