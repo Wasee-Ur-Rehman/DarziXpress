@@ -11,7 +11,7 @@ const ChangePasswordPage = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [message, setMessage] = useState({ type: '', text: '' }); // type: either 'success' or 'error'
+    const [message, setMessage] = useState({ type: '', text: '' }); // type: 'success' or 'error'
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -32,7 +32,8 @@ const ChangePasswordPage = () => {
 
         // --- Mock Password Change Logic ---
         // In a real app, you'd make an API call here.
-        if (currentPassword === "oldpassword123") {
+        // For this example, we'll just simulate success/failure.
+        if (currentPassword === "oldpassword123") { // Simulate correct current password
             console.log("Password change requested:", { currentPassword, newPassword });
             setMessage({ type: 'success', text: 'Password changed successfully! (Mock)' });
             setCurrentPassword('');

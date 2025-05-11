@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ProfitChart from "../components/ProfitChart";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 const Dashboard = () => {
   const [pendingTailors, setPendingTailors] = useState([]);
@@ -171,6 +172,7 @@ const Dashboard = () => {
       {/* Profit Chart */}
       <section className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-xl font-semibold mb-4">Profit Trend</h3>
+        <ProfitChart data={profitData} />
       </section>
     </div>
   );
