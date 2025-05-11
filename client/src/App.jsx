@@ -28,6 +28,7 @@ import OrderDetails from './pages/tailor/OrderDetails.jsx';
 import Dashboard from './pages/admin/Dashboard.jsx';
 import Privacy from './pages/Privacy.jsx';
 import Terms from './pages/Terms.jsx';
+import ManageProfile from './pages/admin/ManageProfile.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
@@ -44,7 +45,7 @@ const App = () => {
         <Route path="/terms" element={<Terms />} />
 
         {/* Customer Routes */}
-        <Route path="/customer/*" element={<CustomerLayout />}>
+        <Route path="/customer" element={<CustomerLayout />}>
           <Route path="/" element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<CustomerDashboard />} />
           <Route path="orders" element={<Orders />} />
@@ -55,7 +56,7 @@ const App = () => {
         </Route>
 
         {/* Tailor Routes */}
-        <Route path="/tailor/*" element={<TailorLayout />}>
+        <Route path="/tailor" element={<TailorLayout />}>
           <Route path="/" element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<TailorDashboard />} />
           <Route path="orders" element={<ManageOrders />} />
@@ -69,7 +70,7 @@ const App = () => {
         </Route>
 
         {/* Admin Routes */}
-        <Route path="/admin/*" element={<Dashboard />}>
+        <Route path="/admin" element={<Dashboard />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
