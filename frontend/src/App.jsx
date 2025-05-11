@@ -13,8 +13,8 @@ const App = () => {
     <Routes>
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="orders" element={<Orders />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="/admin/orders" element={<Orders />} />
+        {/* <Route path="profile" element={<Profile />} /> */}
         <Route path="manage-profile" element={<ManageProfile />} />
       </Route>
     </Routes>

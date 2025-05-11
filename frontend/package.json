@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "tailwindcss": "^3.x",
+  "postcss": "^8.x",
+  "autoprefixer": "^10.x",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

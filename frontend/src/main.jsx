@@ -1,9 +1,9 @@
-// src/index.js or src/main.jsx (depending on your project setup)
+// src/main.jsx
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // or 'react-dom'
-import './index.css';  // Import your global CSS
-import App from './App';  // Ensure the correct path to App component
-import { BrowserRouter } from 'react-router-dom';  // Import BrowserRouter
+import ReactDOM from 'react-dom/client';
+import './index.css'; 
+import App from './App';  
+import { BrowserRouter } from 'react-router-dom';  
 
 const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement);

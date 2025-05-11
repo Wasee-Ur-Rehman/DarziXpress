@@ -1,9 +1,18 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
+  customerName: String,
   tailorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tailor' },
-  amount: { type: Number, required: true },
+  description: String,
+  status: {
+    type: String,
+    enum: ['active', 'completed', 'declined'],
+    default: 'active',
+  },
   createdAt: { type: Date, default: Date.now },
+  completedAt: Date,
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+const Order = mongoose.model('Order', orderSchema);
+export default Order;
+

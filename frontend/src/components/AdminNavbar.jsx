@@ -1,8 +1,8 @@
 // src/components/AdminNavbar.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, useNavigate, Link } from 'react-router-dom';
-import { UserCircle, ChevronDown, LogOut } from 'lucide-react';
-import './AdminNavbar.css';
+import React, { useState, useRef, useEffect } from "react";
+import { NavLink, useNavigate, Link } from "react-router-dom";
+import { UserCircle, ChevronDown, LogOut } from "lucide-react";
+import "./AdminNavbar.css";
 
 const AdminNavbar = () => {
   const navigate = useNavigate();
@@ -12,22 +12,17 @@ const AdminNavbar = () => {
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/admin-login');
+    localStorage.removeItem("adminToken");
+    navigate("/admin-login");
   };
 
-  const userName = "Admin"; 
+  const userName = "Admin";
   const userEmail = "admin@darziexpress.com";
 
   const dropdownItems = [
     {
-      name: 'Profile',
-      path: '/admin/profile',
-      icon: <UserCircle size={18} />,
-    },
-    {
-      name: 'Manage Profile',
-      path: '/admin/manage-profile',
+      name: "Manage Profile",
+      path: "/admin/manage-profile",
     },
   ];
 
@@ -37,29 +32,17 @@ const AdminNavbar = () => {
         setIsDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
     <nav className="navbar">
-      {/* Logo */}
       <div className="logo">
-        <NavLink
-          to="/admin/dashboard"
-          className={({ isActive }) =>
-            isActive
-              ? 'text-blue-500 font-semibold'
-              : 'text-gray-700 hover:text-indigo-600'
-          }
-        >
-          DarziExpress
-        </NavLink>
+        DarziExpress
       </div>
-
-      {/* Navigation Links */}
       <div className="nav-links">
         <NavLink
           to="/admin/dashboard"
@@ -75,13 +58,13 @@ const AdminNavbar = () => {
         >
           Orders
         </NavLink>
-        <NavLink
+        {/* <NavLink
           to="/admin/profile"
           className="nav-link"
           activeClassName="text-indigo-600"
         >
           Profile
-        </NavLink>
+        </NavLink> */}
         <NavLink
           to="/admin/manage-profile"
           className="nav-link"
@@ -102,7 +85,7 @@ const AdminNavbar = () => {
           <ChevronDown
             size={16}
             className={`ml-1 text-slate-400 transition-transform duration-200 ${
-              isDropdownOpen ? 'rotate-180' : ''
+              isDropdownOpen ? "rotate-180" : ""
             }`}
           />
         </button>

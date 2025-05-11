@@ -1,7 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Tailor = require('../models/Tailor'); // Assuming your Tailor model is here
-const Order = require('../models/Order'); // Assuming your Order model is here
+
+import Tailor from '../models/Tailor.js';
+import Order from '../models/Order.js';
+import moment from 'moment';
+import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
 
 // Fetch overview data (total profits, pending tailor requests, disabled tailors)
 router.get('/overview', async (req, res) => {
@@ -58,4 +62,61 @@ router.post('/tailor-requests/:id/decline', async (req, res) => {
   }
 });
 
-module.exports = router;
+router.get("/orders-summary", async (req, res) => {
+  try {
+    const tailors = await Tailor.find({}); // Adjust query if needed
+
+    let activeOrders = [];
+    let completedOrders = [];
+    let declinedOrders = [];
+
+    tailors.forEach((tailor) => {
+      tailor.orders.forEach((order) => {
+        if (order.status === "active") activeOrders.push(order);
+        else if (
+          order.status === "completed" &&
+          moment(order.completedAt).isSame(moment(), "month")
+        )
+          completedOrders.push(order);
+        else if (order.status === "declined") declinedOrders.push(order);
+      });
+    });
+
+    res.json({ activeOrders, completedOrders, declinedOrders });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch order summary" });
+  }
+});
+
+router.get('/profile', async (req, res) => {
+  try {
+    const admin = await User.findOne({ userType: 'admin' });
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+    res.json(admin);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT admin profile
+router.put('/profile', async (req, res) => {
+  try {
+    const admin = await User.findOne({ userType: 'admin' });
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+    const { fullName, email, phoneNumber, city, password } = req.body;
+
+    if (fullName) admin.fullName = fullName;
+    if (email) admin.email = email;
+    if (phoneNumber) admin.phoneNumber = phoneNumber;
+    if (city) admin.city = city;
+    if (password) admin.password = await bcrypt.hash(password, 10);
+
+    await admin.save();
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+export default router;

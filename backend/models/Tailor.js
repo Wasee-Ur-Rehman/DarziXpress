@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tailorSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,5 +6,6 @@ const tailorSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'active', 'disabled'], default: 'pending' },
   createdAt: { type: Date, default: Date.now },
 });
+const Tailor = mongoose.model('Tailor', tailorSchema);
+export default Tailor;
 
-module.exports = mongoose.model('Tailor', tailorSchema);
