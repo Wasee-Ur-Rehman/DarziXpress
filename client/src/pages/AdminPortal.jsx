@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Check, ChartBar, Settings, Users, UserPlus } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { Check, GitGraphIcon, Settings, Users, UserPlus } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const AdminPortal = () => {
   const navigate = useNavigate();
@@ -201,7 +201,7 @@ const AdminPortal = () => {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: 'dashboard', icon: <ChartBar className="h-5 w-5" /> },
+    { name: 'Dashboard', path: 'dashboard', icon: <GitGraphIcon className="h-5 w-5" /> },
     { name: 'Users', path: 'users', icon: <Users className="h-5 w-5" /> },
     { name: 'Registration Requests', path: 'registration-requests', icon: <UserPlus className="h-5 w-5" /> },
     { name: 'User Activity', path: 'user-activity', icon: <Check className="h-5 w-5" /> },
@@ -513,20 +513,7 @@ const AdminPortal = () => {
             <h2 className="text-lg font-medium">User Activity Log</h2>
             <p className="text-sm text-gray-500 mt-1">Monitor all user actions across the platform</p>
           </div>
-          <div className="flex space-x-2">
-            <button className="flex items-center text-gray-700 border px-4 py-2 rounded hover:bg-gray-50">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-              </svg>
-              Filter
-            </button>
-            <button className="flex items-center text-gray-700 border px-4 py-2 rounded hover:bg-gray-50">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export
-            </button>
-          </div>
+         
         </div>
 
         <div className="overflow-x-auto">
@@ -582,19 +569,6 @@ const AdminPortal = () => {
           </table>
         </div>
         
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-500">
-            Showing 1 to 7 of 7 entries
-          </div>
-          <div className="flex space-x-2">
-            <button className="px-4 py-2 border rounded-lg text-gray-500 bg-white hover:bg-gray-50" disabled>
-              Previous
-            </button>
-            <button className="px-4 py-2 border rounded-lg text-gray-500 bg-white hover:bg-gray-50" disabled>
-              Next
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -670,19 +644,7 @@ const AdminPortal = () => {
           </ul>
         </div>
         
-        <div className="p-4 border-t">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-sm">
-              A
-            </div>
-            {!sidebarCollapsed && (
-              <div className="ml-2">
-                <div className="text-sm font-medium">Admin User</div>
-                <div className="text-xs text-gray-500">admin@example.com</div>
-              </div>
-            )}
-          </div>
-        </div>
+        
       </div>
       <div className="flex-1 flex flex-col">
         <header className="bg-white border-b p-4">
@@ -691,20 +653,6 @@ const AdminPortal = () => {
               {activeSection.charAt(0).toUpperCase() + activeSection.slice(1).replace('-', ' ')}
             </h1>
             
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <button className="p-2 text-gray-500 hover:text-gray-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </button>
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-              </div>
-              
-              <button className="ml-4 px-4 py-2 bg-brand text-white rounded-md hover:bg-brand/90">
-                Generate Report
-              </button>
-            </div>
           </div>
         </header>
 
