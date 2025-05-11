@@ -1,9 +1,9 @@
 // routes/orderRoutes.js
 import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
-import Order from '../models/schemas/orderSchema.js'; // Ensure this path is correct
-// import User from '../models/schemas/userSchema.js'; // Only if needed for extra checks not covered by authMiddleware
+import Order from '../models/schemas/orderSchema.js';
 import TailorEarning from '../models/schemas/tailorEarningSchema.js';
+// import User from '../models/schemas/userSchema.js'; // Only if you need to check User model directly for tailor existence beyond auth
 
 const router = express.Router();
 
@@ -13,26 +13,28 @@ const router = express.Router();
 // @desc    Get all orders for the logged-in customer
 // @access  Private (Customer)
 router.get('/my-orders', authMiddleware, async (req, res) => {
-    console.log('--- Reached GET /api/orders/my-orders ---');
+    console.log('--- API Reached: GET /api/orders/my-orders ---');
+    console.log('Authenticated User (my-orders):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only for customers.' });
     }
     try {
         const orders = await Order.find({ customer: req.user.userId })
-            .populate('tailor', 'fullName') // Populate tailor's name
+            .populate('tailor', 'fullName') // Populate tailor's name for display
             .sort({ orderDate: -1 });
         res.json(orders);
     } catch (error) {
-        console.error("Error fetching customer orders:", error);
+        console.error("Error fetching customer orders (/my-orders):", error);
         res.status(500).json({ message: 'Server Error fetching customer orders' });
     }
 });
 
 // @route   GET /api/orders/my-orders/latest/:count
-// @desc    Get latest orders summary for the logged-in customer (Dashboard)
+// @desc    Get latest orders summary for the logged-in customer (Customer Dashboard)
 // @access  Private (Customer)
 router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
-    console.log('--- Reached GET /api/orders/my-orders/latest/:count ---');
+    console.log('--- API Reached: GET /api/orders/my-orders/latest/:count ---');
+    console.log('Authenticated User (my-orders/latest):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only for customers.' });
     }
@@ -41,9 +43,8 @@ router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
         const latestOrders = await Order.find({ customer: req.user.userId })
             .sort({ orderDate: -1 })
             .limit(count)
-            .select('orderIdString items status orderDate totalAmount'); // Select only needed fields
+            .select('orderIdString items status orderDate totalAmount');
 
-        // Define "active" for customer view - typically orders not yet fully resolved
         const activeCustomerOrderStatus = ['Pending', 'In Progress'];
         const activeOrdersCount = await Order.countDocuments({
             customer: req.user.userId,
@@ -52,7 +53,7 @@ router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
 
         res.json({ latestOrders, activeOrdersCount });
     } catch (error) {
-        console.error("Error fetching customer orders summary:", error);
+        console.error("Error fetching customer orders summary (/my-orders/latest):", error);
         res.status(500).json({ message: 'Server Error fetching customer orders summary' });
     }
 });
@@ -61,34 +62,33 @@ router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
 // @desc    Get all orders assigned to the logged-in tailor
 // @access  Private (Tailor)
 router.get('/tailor-orders', authMiddleware, async (req, res) => {
-    console.log('--- Reached GET /api/orders/tailor-orders ---');
+    console.log('--- API Reached: GET /api/orders/tailor-orders ---');
+    console.log('Authenticated User (tailor-orders):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'tailor') {
-        console.error('Tailor Orders (/tailor-orders): Access Denied. User:', req.user);
         return res.status(403).json({ message: 'Access denied. Only for tailors.' });
     }
     try {
         const orders = await Order.find({ tailor: req.user.userId })
-            .populate('customer', 'fullName email') // Populate customer's details
-            .sort({ orderDate: -1 });
+                                     .populate('customer', 'fullName email')
+                                     .sort({ orderDate: -1 });
         res.json(orders);
     } catch (error) {
-        console.error("Error fetching tailor orders:", error);
+        console.error("Error fetching tailor orders (/tailor-orders):", error);
         res.status(500).json({ message: 'Server Error fetching tailor orders' });
     }
 });
 
 // @route   GET /api/orders/tailor-summary
-// @desc    Get order summary for the logged-in tailor
+// @desc    Get order summary for the logged-in tailor (Tailor Dashboard)
 // @access  Private (Tailor)
 router.get('/tailor-summary', authMiddleware, async (req, res) => {
-    console.log('--- Reached GET /api/orders/tailor-summary ---');
+    console.log('--- API Reached: GET /api/orders/tailor-summary ---');
+    console.log('Authenticated User (tailor-summary):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'tailor') {
-        console.error('Tailor Order Summary (/tailor-summary): Access Denied. User:', req.user);
         return res.status(403).json({ message: 'Access denied. Only for tailors.' });
     }
     try {
         const tailorId = req.user.userId;
-        // Define "active" for tailor view
         const activeTailorOrderStatus = ['Pending', 'In Progress'];
         const activeOrdersCount = await Order.countDocuments({
             tailor: tailorId,
@@ -97,159 +97,81 @@ router.get('/tailor-summary', authMiddleware, async (req, res) => {
 
         const latestCompletedOrder = await Order.findOne({
             tailor: tailorId,
-            status: 'Completed' // Using 'Completed' as the final positive status
-        }).sort({ actualDeliveryDate: -1, updatedAt: -1 }).select('actualDeliveryDate updatedAt'); // Sort by delivery date, then by update
+            status: 'Completed'
+        }).sort({ actualDeliveryDate: -1, updatedAt: -1 }).select('actualDeliveryDate updatedAt');
 
         res.json({
             activeOrdersCount,
             lastCompletedOrderDate: latestCompletedOrder ? (latestCompletedOrder.actualDeliveryDate || latestCompletedOrder.updatedAt) : null
         });
     } catch (error) {
-        console.error("Error fetching tailor order summary:", error);
+        console.error("Error fetching tailor order summary (/tailor-summary):", error);
         res.status(500).json({ message: 'Server Error fetching order summary' });
     }
 });
 
 
-// --- General/Dynamic parameter routes AFTER specific string routes ---
+// --- GENERAL / ACTION ROUTES ---
 
 // @route   POST /api/orders
-// @desc    Create a new order (customer places an order)
+// @desc    Customer creates a new order
 // @access  Private (Customer)
 router.post('/', authMiddleware, async (req, res) => {
-    console.log('--- Reached POST /api/orders ---');
+    console.log('--- API Reached: POST /api/orders ---');
+    console.log('Authenticated User (create order):', JSON.stringify(req.user, null, 2));
+    console.log('Request Body (create order):', JSON.stringify(req.body, null, 2));
+
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only customers can create orders.' });
     }
     try {
-        const { tailorId, tailorName, items, totalAmount, shippingAddress, notesToTailor } = req.body;
+        const {
+            tailorId, tailorName, serviceId, serviceName, servicePrice,
+            quantity = 1, shippingAddress, notesToTailor, selectedMeasurementProfileId,
+        } = req.body;
 
-        // Basic validation
-        if (!tailorId || !items || !Array.isArray(items) || items.length === 0 || !totalAmount) {
-            return res.status(400).json({ message: 'Missing or invalid required order details (tailorId, items array, totalAmount).' });
+        if (!tailorId || !serviceId || !serviceName || servicePrice === undefined || !shippingAddress || !shippingAddress.address || !shippingAddress.city) {
+            return res.status(400).json({ message: 'Missing required order details: tailorId, serviceId, serviceName, servicePrice, and complete shippingAddress are required.' });
         }
-        // Further validation for items array elements can be added here
-        for (const item of items) {
-            if (!item.serviceName || !item.quantity || item.pricePerItem === undefined) {
-                return res.status(400).json({ message: 'Each item must have serviceName, quantity, and pricePerItem.' });
-            }
+        if (!selectedMeasurementProfileId) {
+            return res.status(400).json({ message: 'Please select a measurement profile for this order.' });
         }
+
+        const items = [{ serviceId, serviceName, quantity, pricePerItem: servicePrice }];
+        const totalAmount = servicePrice * quantity;
 
         const newOrder = new Order({
             customer: req.user.userId,
             tailor: tailorId,
-            tailorName, // Denormalized for display
-            items,
-            totalAmount,
-            shippingAddress,
-            notesToTailor,
-            status: 'Pending', // Initial status set to 'Pending'
+            tailorName, items, totalAmount, shippingAddress, notesToTailor,
+            linkedMeasurementProfile: selectedMeasurementProfileId,
+            status: 'Pending', // Default status from schema is 'Pending'
         });
+        // orderIdString will be auto-generated by pre-save hook
 
         const savedOrder = await newOrder.save();
-        // TODO: Notify tailor about the new order (e.g., via email, push notification, WebSocket)
+        console.log('Order created successfully:', savedOrder._id, savedOrder.orderIdString);
+        // TODO: Notify tailor about the new order
         res.status(201).json(savedOrder);
     } catch (error) {
-        console.error("Error creating order:", error);
+        console.error("Error creating order (POST /api/orders):", error);
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: error.message });
+            let messages = [];
+            for (let field in error.errors) { messages.push(error.errors[field].message); }
+            return res.status(400).json({ message: "Order validation failed.", details: messages.join('; ') });
         }
         res.status(500).json({ message: 'Server Error creating order.' });
     }
 });
 
 // @route   PUT /api/orders/:orderId/status
-// @desc    Tailor updates the status of an order
+// @desc    Tailor updates the status of an order AND handles earnings
 // @access  Private (Tailor)
 router.put('/:orderId/status', authMiddleware, async (req, res) => {
-    console.log(`--- Reached PUT /api/orders/:orderId/status with orderId: ${req.params.orderId} ---`);
-    if (!req.user || req.user.userType !== 'tailor') {
-        return res.status(403).json({ message: 'Access denied. Only tailors can update order status.' });
-    }
+    console.log(`--- API Reached: PUT /api/orders/${req.params.orderId}/status ---`);
+    console.log('Authenticated User (update status):', JSON.stringify(req.user, null, 2));
+    console.log(`Request Body (update status): { status: "${req.body.status}" }`);
 
-    const { status } = req.body;
-    const { orderId } = req.params;
-
-    if (!status) {
-        return res.status(400).json({ message: 'New status is required.' });
-    }
-
-    // Use the simplified list of statuses
-    const allowedStatuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
-    if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ message: `Invalid status value. Allowed: ${allowedStatuses.join(', ')}` });
-    }
-
-    try {
-        const order = await Order.findById(orderId);
-
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found.' });
-        }
-
-        if (order.tailor.toString() !== req.user.userId) {
-            return res.status(403).json({ message: 'You are not authorized to update this order.' });
-        }
-
-        // Logic for specific status transitions
-        if (order.status === 'Completed' && status !== 'Completed') {
-            return res.status(400).json({ message: 'Cannot change status from Completed without specific override logic.' });
-        }
-        if (order.status === 'Cancelled' && status !== 'Cancelled') {
-            return res.status(400).json({ message: 'Cannot change status from Cancelled without specific override logic.' });
-        }
-
-
-        order.status = status;
-        if (status === 'Completed' && !order.actualDeliveryDate) { // Changed from 'Delivered'
-            order.actualDeliveryDate = new Date();
-        }
-        // If you re-introduce 'Shipped', you'd handle trackingNumber here:
-        // if (status === 'Shipped' && req.body.trackingNumber) {
-        //     order.trackingNumber = req.body.trackingNumber;
-        // }
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-
-    } catch (error) {
-        console.error("Error updating order status:", error);
-        if (error.kind === 'ObjectId') {
-            return res.status(400).json({ message: `Invalid Order ID format for status update: ${orderId}` });
-        }
-        res.status(500).json({ message: 'Server error updating order status.' });
-    }
-});
-
-
-// @route   GET /api/orders/:id
-// @desc    Get a specific order by its MongoDB ID (for customer or involved tailor)
-// @access  Private
-router.get('/:id', authMiddleware, async (req, res) => {
-    console.log(`--- Reached GET /api/orders/:id with id: ${req.params.id} ---`);
-    try {
-        const order = await Order.findById(req.params.id)
-            .populate('customer', 'fullName email')
-            .populate('tailor', 'fullName email'); // Populate details
-
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
-        // Authorization: Ensure user is the customer or the tailor for this order
-        if (order.customer._id.toString() !== req.user.userId && order.tailor._id.toString() !== req.user.userId) {
-            return res.status(403).json({ message: 'Not authorized to view this order' });
-        }
-        res.json(order);
-    } catch (error) {
-        console.error("Error fetching order details:", error);
-        if (error.kind === 'ObjectId') {
-            return res.status(400).json({ message: `Invalid Order ID format: ${req.params.id}` });
-        }
-        res.status(500).json({ message: 'Server Error fetching order details' });
-    }
-});
-
-router.put('/:orderId/status', authMiddleware, async (req, res) => {
     if (!req.user || req.user.userType !== 'tailor') {
         return res.status(403).json({ message: 'Access denied. Only tailors can update order status.' });
     }
@@ -275,15 +197,19 @@ router.put('/:orderId/status', authMiddleware, async (req, res) => {
         }
 
         const previousStatus = order.status;
+        if ((previousStatus === 'Completed' && status !== 'Completed' && status !== 'Cancelled') ||
+            (previousStatus === 'Cancelled' && status !== 'Cancelled')) {
+            return res.status(400).json({ message: `Cannot change status from '${previousStatus}' to '${status}'.` });
+        }
+
         order.status = status;
 
         if (status === 'Completed') {
             if (!order.actualDeliveryDate) {
                 order.actualDeliveryDate = new Date();
             }
-            order.paymentStatus = 'Paid'; // Assuming payment is confirmed upon completion
+            order.paymentStatus = 'Paid';
 
-            // Check if an earning record already exists for this order to prevent duplicates
             const existingEarning = await TailorEarning.findOne({ order: order._id });
             if (!existingEarning) {
                 const newEarning = new TailorEarning({
@@ -291,30 +217,113 @@ router.put('/:orderId/status', authMiddleware, async (req, res) => {
                     order: order._id,
                     orderIdString: order.orderIdString,
                     serviceNames: order.items.map(item => item.serviceName),
-                    earnedAmount: order.totalAmount, // Tailor earns the full order amount
+                    earnedAmount: order.totalAmount,
                     completionDate: order.actualDeliveryDate || new Date(),
                 });
                 await newEarning.save();
-                console.log(`Earning record created for order ${order.orderIdString}. Amount: ${newEarning.earnedAmount}`);
+                console.log(`Earning record CREATED for order ${order.orderIdString}. Amount: ${newEarning.earnedAmount}`);
             } else {
-                console.log(`Earning record for order ${order.orderIdString} already exists.`);
+                console.log(`Earning record for order ${order.orderIdString} already exists. Current earning: ${existingEarning.earnedAmount}`);
+                // Optionally update if details changed:
+                // existingEarning.earnedAmount = order.totalAmount; // if total amount could change after initial completion
+                // existingEarning.completionDate = order.actualDeliveryDate || new Date();
+                // await existingEarning.save();
             }
         } else if (status === 'Cancelled' && previousStatus === 'Completed') {
-            // If an order is cancelled AFTER being completed, we should delete the earning record.
-            console.log(`Order ${order.orderIdString} cancelled after completion. Attempting to remove earning record.`);
-            await TailorEarning.deleteOne({ order: order._id });
-            console.log(`Earning record for order ${order.orderIdString} removed due to cancellation.`);
+            console.log(`Order ${order.orderIdString} cancelled after completion. Removing earning record.`);
+            const deleteResult = await TailorEarning.deleteOne({ order: order._id });
+            console.log(`Earning record for order ${order.orderIdString} removal result:`, deleteResult);
         }
 
         const updatedOrder = await order.save();
         res.json(updatedOrder);
 
     } catch (error) {
-        console.error("Error updating order status and/or earnings:", error);
+        console.error(`Error updating order status for ${orderId}:`, error);
         if (error.kind === 'ObjectId') {
             return res.status(400).json({ message: `Invalid Order ID format: ${orderId}` });
         }
         res.status(500).json({ message: 'Server error updating order status.' });
+    }
+});
+
+
+// @route   GET /api/orders/:id  <--- MOST GENERAL DYNAMIC GET ROUTE AT THE END of GETs
+// @desc    Get a specific order by its MongoDB ID (for customer or involved tailor)
+// @access  Private
+router.get('/:id', authMiddleware, async (req, res) => {
+    console.log(`--- API Reached: GET /api/orders/:id with id: ${req.params.id} ---`);
+    console.log('Authenticated User (get order by id):', JSON.stringify(req.user, null, 2));
+    try {
+        const order = await Order.findById(req.params.id)
+                              .populate('customer', 'fullName email') // Populate customer details
+                              .populate('tailor', 'fullName email');   // Populate tailor details
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        // Authorization: Ensure user is the customer or the tailor for this order
+        if (order.customer._id.toString() !== req.user.userId && order.tailor._id.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized to view this order' });
+        }
+        res.json(order);
+    } catch (error) {
+        console.error(`Error fetching order details for ${req.params.id}:`, error);
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: `Invalid Order ID format: ${req.params.id}` });
+        }
+        res.status(500).json({ message: 'Server Error fetching order details' });
+    }
+});
+
+// routes/orderRoutes.js
+// ... (other imports and routes) ...
+
+// @route   DELETE /api/orders/:orderId
+// @desc    Customer deletes their own order if it's in an allowed state
+// @access  Private (Customer)
+router.delete('/:orderId', authMiddleware, async (req, res) => {
+    console.log(`--- API Reached: DELETE /api/orders/${req.params.orderId} ---`);
+    if (!req.user || req.user.userType !== 'customer') {
+        return res.status(403).json({ message: 'Access denied. Only customers can delete their orders.' });
+    }
+
+    const { orderId } = req.params;
+
+    try {
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+
+        // Ensure the order belongs to this customer
+        if (order.customer.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'You are not authorized to delete this order.' });
+        }
+
+        // --- BUSINESS LOGIC: Check if the order status allows deletion ---
+        const deletableStatuses = ['Pending', 'In Progress'];
+        if (!deletableStatuses.includes(order.status)) {
+            return res.status(400).json({ 
+                message: `Cannot delete order. Order status is currently '${order.status}'. Only orders that are 'Pending' or 'In Progress' can be deleted by the customer.` 
+            });
+        }
+        // --- END BUSINESS LOGIC ---
+
+        // If an order is deleted, there should be no associated earning record yet,
+        // as earnings are created upon 'Completed' status. So, no TailorEarning cleanup needed here.
+
+        await Order.findByIdAndDelete(orderId);
+        console.log(`Order ${order.orderIdString} (ID: ${orderId}) deleted by customer ${req.user.userId}`);
+        res.json({ message: 'Order deleted successfully.' });
+
+    } catch (error) {
+        console.error("Error deleting order:", error);
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: `Invalid Order ID format: ${orderId}` });
+        }
+        res.status(500).json({ message: 'Server error deleting order.' });
     }
 });
 

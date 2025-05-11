@@ -13,6 +13,7 @@ import Measurements from './pages/customer/Measurements'; // Import Measurements
 import TailorListing from './pages/customer/TailorListing'; // Import TailorListing
 
 import ChangePassword from './pages/ChangePassword.jsx'; // Import ChangePassword
+import ServiceDetailPage from './pages/ServiceDetailPage.jsx';
 
 
 //tailor imports
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="measurements" element={<Measurements />} />
             <Route path="changePassword" element={<ChangePassword />} />
             <Route path="listing" element={<TailorListing />} />
+            <Route path="service-details/:serviceId" element={<ServiceDetailPage />} />
           </Route>
 
           {/* Tailor Routes */}
