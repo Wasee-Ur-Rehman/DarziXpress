@@ -5,18 +5,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/landingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
-import CustomerLayout from './layouts/CustomerLayout';  // Import CustomerLayout
-import CustomerDashboard from './pages/customer/CustomerDashboard.jsx';   // Import Dashboard
-import Orders from './pages/customer/Orders';         // Import Orders
-import Profile from './pages/customer/ProfileInfo'; // Import Profile
-import Measurements from './pages/customer/Measurements'; // Import Measurements
-import TailorListing from './pages/customer/TailorListing'; // Import TailorListing
-
-import ChangePassword from './pages/ChangePassword.jsx'; // Import ChangePassword
-
-
-//tailor imports
-// Tailor Layout and Pages
+import CustomerLayout from './layouts/CustomerLayout';
+import CustomerDashboard from './pages/customer/CustomerDashboard.jsx'
+import Orders from './pages/customer/Orders';
+import Profile from './pages/customer/ProfileInfo'
+import Measurements from './pages/customer/Measurements';
+import TailorListing from './pages/customer/TailorListing';
+import ChangePassword from './pages/ChangePassword.jsx';
 import TailorLayout from './layouts/TailorLayout.jsx';
 import TailorDashboard from './pages/tailor/TailorDashboard.jsx';
 import ManageOrders from './pages/tailor/ManageOrders.jsx';
@@ -25,8 +20,14 @@ import MyListings from './pages/tailor/MyListings.jsx';
 import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
 import MyEarnings from './pages/tailor/MyEarnings.jsx';
 import OrderDetails from './pages/tailor/OrderDetails.jsx';
+import Dashboard from './pages/admin/Dashboard.jsx';
+import Privacy from './pages/Privacy.jsx';
+import Terms from './pages/Terms.jsx';
+import ManageProfile from './pages/admin/ManageProfile.jsx';
+import AdminPortal from './pages/AdminPortal.jsx';
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
+
 
 const App = () => {
   return (
@@ -36,6 +37,8 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
 
         {/* Customer Routes */}
         <Route path="/customer" element={<CustomerLayout />}>
@@ -48,7 +51,7 @@ const App = () => {
           <Route path="listing" element={<TailorListing />} />
         </Route>
 
-          {/* Tailor Routes */}
+        {/* Tailor Routes */}
         <Route path="/tailor" element={<TailorLayout />}>
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<TailorDashboard />} />
@@ -60,6 +63,14 @@ const App = () => {
           <Route path="orders/:id" element={<OrderDetails />} />
           <Route path="changePassword" element={<ChangePassword />} />
           <Route path="profile" element={<Profile />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminPortal />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="manage-profile" element={<ManageProfile />} />
         </Route>
       </Routes>
     </Router>
