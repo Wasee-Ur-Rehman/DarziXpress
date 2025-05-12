@@ -82,10 +82,10 @@ const App = () => {
             <Route path="profile" element={<Profile />} />
           </Route>
 
-          {/* Admin Routes */}
+          {/* Admin Routes
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
-          </Route>
+          </Route> */}
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>

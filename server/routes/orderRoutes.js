@@ -3,9 +3,12 @@ import express from 'express';
 import authMiddleware from '../middleware/authMiddleware.js';
 import Order from '../models/schemas/orderSchema.js';
 import TailorEarning from '../models/schemas/tailorEarningSchema.js';
-// import User from '../models/schemas/userSchema.js'; // Only if you need to check User model directly for tailor existence beyond auth
+import PlatformEarning from '../models/schemas/platformEarningSchema.js';
 
 const router = express.Router();
+
+// Define the platform commission rate (e.g., 5%)
+const PLATFORM_COMMISSION_RATE = 0.05;
 
 // --- Specific string routes BEFORE dynamic parameter routes ---
 
@@ -14,13 +17,12 @@ const router = express.Router();
 // @access  Private (Customer)
 router.get('/my-orders', authMiddleware, async (req, res) => {
     console.log('--- API Reached: GET /api/orders/my-orders ---');
-    console.log('Authenticated User (my-orders):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only for customers.' });
     }
     try {
         const orders = await Order.find({ customer: req.user.userId })
-            .populate('tailor', 'fullName') // Populate tailor's name for display
+            .populate('tailor', 'fullName')
             .sort({ orderDate: -1 });
         res.json(orders);
     } catch (error) {
@@ -34,12 +36,11 @@ router.get('/my-orders', authMiddleware, async (req, res) => {
 // @access  Private (Customer)
 router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
     console.log('--- API Reached: GET /api/orders/my-orders/latest/:count ---');
-    console.log('Authenticated User (my-orders/latest):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only for customers.' });
     }
     try {
-        const count = parseInt(req.params.count) || 1; // Default to 1 for dashboard summary
+        const count = parseInt(req.params.count) || 1;
         const latestOrders = await Order.find({ customer: req.user.userId })
             .sort({ orderDate: -1 })
             .limit(count)
@@ -50,7 +51,6 @@ router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
             customer: req.user.userId,
             status: { $in: activeCustomerOrderStatus }
         });
-
         res.json({ latestOrders, activeOrdersCount });
     } catch (error) {
         console.error("Error fetching customer orders summary (/my-orders/latest):", error);
@@ -63,7 +63,6 @@ router.get('/my-orders/latest/:count', authMiddleware, async (req, res) => {
 // @access  Private (Tailor)
 router.get('/tailor-orders', authMiddleware, async (req, res) => {
     console.log('--- API Reached: GET /api/orders/tailor-orders ---');
-    console.log('Authenticated User (tailor-orders):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'tailor') {
         return res.status(403).json({ message: 'Access denied. Only for tailors.' });
     }
@@ -83,7 +82,6 @@ router.get('/tailor-orders', authMiddleware, async (req, res) => {
 // @access  Private (Tailor)
 router.get('/tailor-summary', authMiddleware, async (req, res) => {
     console.log('--- API Reached: GET /api/orders/tailor-summary ---');
-    console.log('Authenticated User (tailor-summary):', JSON.stringify(req.user, null, 2));
     if (!req.user || req.user.userType !== 'tailor') {
         return res.status(403).json({ message: 'Access denied. Only for tailors.' });
     }
@@ -94,12 +92,10 @@ router.get('/tailor-summary', authMiddleware, async (req, res) => {
             tailor: tailorId,
             status: { $in: activeTailorOrderStatus }
         });
-
         const latestCompletedOrder = await Order.findOne({
             tailor: tailorId,
             status: 'Completed'
         }).sort({ actualDeliveryDate: -1, updatedAt: -1 }).select('actualDeliveryDate updatedAt');
-
         res.json({
             activeOrdersCount,
             lastCompletedOrderDate: latestCompletedOrder ? (latestCompletedOrder.actualDeliveryDate || latestCompletedOrder.updatedAt) : null
@@ -118,9 +114,6 @@ router.get('/tailor-summary', authMiddleware, async (req, res) => {
 // @access  Private (Customer)
 router.post('/', authMiddleware, async (req, res) => {
     console.log('--- API Reached: POST /api/orders ---');
-    console.log('Authenticated User (create order):', JSON.stringify(req.user, null, 2));
-    console.log('Request Body (create order):', JSON.stringify(req.body, null, 2));
-
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only customers can create orders.' });
     }
@@ -136,22 +129,17 @@ router.post('/', authMiddleware, async (req, res) => {
         if (!selectedMeasurementProfileId) {
             return res.status(400).json({ message: 'Please select a measurement profile for this order.' });
         }
-
         const items = [{ serviceId, serviceName, quantity, pricePerItem: servicePrice }];
         const totalAmount = servicePrice * quantity;
-
         const newOrder = new Order({
             customer: req.user.userId,
             tailor: tailorId,
             tailorName, items, totalAmount, shippingAddress, notesToTailor,
             linkedMeasurementProfile: selectedMeasurementProfileId,
-            status: 'Pending', // Default status from schema is 'Pending'
+            status: 'Pending',
         });
-        // orderIdString will be auto-generated by pre-save hook
-
         const savedOrder = await newOrder.save();
         console.log('Order created successfully:', savedOrder._id, savedOrder.orderIdString);
-        // TODO: Notify tailor about the new order
         res.status(201).json(savedOrder);
     } catch (error) {
         console.error("Error creating order (POST /api/orders):", error);
@@ -168,75 +156,121 @@ router.post('/', authMiddleware, async (req, res) => {
 // @desc    Tailor updates the status of an order AND handles earnings
 // @access  Private (Tailor)
 router.put('/:orderId/status', authMiddleware, async (req, res) => {
-    // ... (existing checks for tailor auth, order existence, status validation)
+    console.log(`--- API Reached: PUT /api/orders/${req.params.orderId}/status ---`);
+    if (!req.user || req.user.userType !== 'tailor') {
+        return res.status(403).json({ message: 'Access denied. Only tailors can update order status.' });
+    }
+
+    const { status } = req.body;
+    const { orderId } = req.params;
+
+    if (!status) {
+        return res.status(400).json({ message: 'New status is required.' });
+    }
+    const allowedStatuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ message: `Invalid status value. Allowed: ${allowedStatuses.join(', ')}` });
+    }
+
     try {
         const order = await Order.findById(orderId);
-        // ... (checks if order exists, belongs to tailor, valid status transition) ...
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+        if (order.tailor.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'You are not authorized to update this order.' });
+        }
 
         const previousStatus = order.status;
+        if ((previousStatus === 'Completed' && status !== 'Completed' && status !== 'Cancelled') ||
+            (previousStatus === 'Cancelled' && status !== 'Cancelled')) {
+            return res.status(400).json({ message: `Cannot change status from '${previousStatus}' to '${status}'.` });
+        }
+
         order.status = status;
 
         if (status === 'Completed') {
-            if (!order.actualDeliveryDate) order.actualDeliveryDate = new Date();
+            if (!order.actualDeliveryDate) {
+                order.actualDeliveryDate = new Date();
+            }
             order.paymentStatus = 'Paid';
 
-            // Handle Tailor Earning (full amount as per previous logic)
-            const existingTailorEarning = await TailorEarning.findOne({ order: order._id });
-            if (!existingTailorEarning) {
-                const newTailorEarning = new TailorEarning({
+            // Calculate earnings based on 5% commission
+            const platformCommissionAmount = order.totalAmount * PLATFORM_COMMISSION_RATE;
+            const tailorActualEarning = order.totalAmount - platformCommissionAmount;
+
+            // Record/Update Tailor Earning
+            let tailorEarningRecord = await TailorEarning.findOne({ order: order._id });
+            if (!tailorEarningRecord) {
+                tailorEarningRecord = new TailorEarning({
                     tailor: order.tailor,
                     order: order._id,
                     orderIdString: order.orderIdString,
                     serviceNames: order.items.map(item => item.serviceName),
-                    earnedAmount: order.totalAmount, // Tailor gets full amount
+                    earnedAmount: tailorActualEarning, // Tailor's actual earning
                     completionDate: order.actualDeliveryDate || new Date(),
                 });
-                await newTailorEarning.save();
-                console.log(`Tailor Earning record created for order ${order.orderIdString}.`);
+                console.log(`Tailor Earning record CREATED for order ${order.orderIdString}. Amount: ${tailorActualEarning}`);
+            } else {
+                tailorEarningRecord.earnedAmount = tailorActualEarning; // Update if it exists
+                tailorEarningRecord.completionDate = order.actualDeliveryDate || new Date();
+                console.log(`Tailor Earning record UPDATED for order ${order.orderIdString}. New Amount: ${tailorActualEarning}`);
             }
+            await tailorEarningRecord.save();
 
-            // --- NEW: Handle Platform Earning ---
-            const existingPlatformEarning = await PlatformEarning.findOne({ order: order._id });
-            if (!existingPlatformEarning) {
-                const newPlatformEarning = new PlatformEarning({
+            // Record/Update Platform Earning
+            let platformEarningRecord = await PlatformEarning.findOne({ order: order._id });
+            if (!platformEarningRecord) {
+                platformEarningRecord = new PlatformEarning({
                     order: order._id,
                     orderIdString: order.orderIdString,
                     tailor: order.tailor,
-                    commissionAmount: PLATFORM_COMMISSION_FEE,
+                    commissionAmount: platformCommissionAmount, // Store the calculated commission
                     earnedAt: order.actualDeliveryDate || new Date(),
                 });
-                await newPlatformEarning.save();
-                console.log(`Platform Earning record created for order ${order.orderIdString}.`);
+                console.log(`Platform Earning record CREATED for order ${order.orderIdString}. Commission: ${platformCommissionAmount}`);
+            } else {
+                platformEarningRecord.commissionAmount = platformCommissionAmount; // Update if it exists
+                platformEarningRecord.earnedAt = order.actualDeliveryDate || new Date();
+                console.log(`Platform Earning record UPDATED for order ${order.orderIdString}. New Commission: ${platformCommissionAmount}`);
             }
-            // --- END NEW ---
+            await platformEarningRecord.save();
 
         } else if (status === 'Cancelled' && previousStatus === 'Completed') {
+            // If order is cancelled AFTER being completed and earnings recorded
+            console.log(`Order ${order.orderIdString} cancelled after completion. Removing associated earning records.`);
             await TailorEarning.deleteOne({ order: order._id });
-            await PlatformEarning.deleteOne({ order: order._id }); // <--- Also delete platform earning
-            console.log(`Earning records (tailor & platform) for order ${order.orderIdString} removed due to cancellation.`);
+            await PlatformEarning.deleteOne({ order: order._id });
+            console.log(`Earning records (tailor & platform) for order ${order.orderIdString} removed.`);
         }
 
         const updatedOrder = await order.save();
         res.json(updatedOrder);
-    } catch (error) { /* ... */ }
+
+    } catch (error) {
+        console.error(`Error updating order status for ${orderId} to ${status}:`, error);
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: `Invalid Order ID format: ${orderId}` });
+        }
+        res.status(500).json({ message: 'Server error while updating order status. Details: ' + error.message });
+    }
 });
 
-// @route   GET /api/orders/:id  <--- MOST GENERAL DYNAMIC GET ROUTE AT THE END of GETs
-// @desc    Get a specific order by its MongoDB ID (for customer or involved tailor)
+// @route   GET /api/orders/:id
+// @desc    Get a specific order by its MongoDB ID
 // @access  Private
 router.get('/:id', authMiddleware, async (req, res) => {
     console.log(`--- API Reached: GET /api/orders/:id with id: ${req.params.id} ---`);
-    console.log('Authenticated User (get order by id):', JSON.stringify(req.user, null, 2));
     try {
         const order = await Order.findById(req.params.id)
-            .populate('customer', 'fullName email') // Populate customer details
-            .populate('tailor', 'fullName email');   // Populate tailor details
-
+            .populate('customer', 'fullName email')
+            .populate('tailor', 'fullName email');
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
-        // Authorization: Ensure user is the customer or the tailor for this order
-        if (order.customer._id.toString() !== req.user.userId && order.tailor._id.toString() !== req.user.userId) {
+        if (order.customer._id.toString() !== req.user.userId &&
+            order.tailor._id.toString() !== req.user.userId &&
+            req.user.userType !== 'admin') { // Allow admin to view any order
             return res.status(403).json({ message: 'Not authorized to view this order' });
         }
         res.json(order);
@@ -249,9 +283,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 });
 
-// routes/orderRoutes.js
-// ... (other imports and routes) ...
-
 // @route   DELETE /api/orders/:orderId
 // @desc    Customer deletes their own order if it's in an allowed state
 // @access  Private (Customer)
@@ -260,37 +291,24 @@ router.delete('/:orderId', authMiddleware, async (req, res) => {
     if (!req.user || req.user.userType !== 'customer') {
         return res.status(403).json({ message: 'Access denied. Only customers can delete their orders.' });
     }
-
     const { orderId } = req.params;
-
     try {
         const order = await Order.findById(orderId);
-
         if (!order) {
             return res.status(404).json({ message: 'Order not found.' });
         }
-
-        // Ensure the order belongs to this customer
         if (order.customer.toString() !== req.user.userId) {
             return res.status(403).json({ message: 'You are not authorized to delete this order.' });
         }
-
-        // --- BUSINESS LOGIC: Check if the order status allows deletion ---
         const deletableStatuses = ['Pending', 'In Progress'];
         if (!deletableStatuses.includes(order.status)) {
             return res.status(400).json({
                 message: `Cannot delete order. Order status is currently '${order.status}'. Only orders that are 'Pending' or 'In Progress' can be deleted by the customer.`
             });
         }
-        // --- END BUSINESS LOGIC ---
-
-        // If an order is deleted, there should be no associated earning record yet,
-        // as earnings are created upon 'Completed' status. So, no TailorEarning cleanup needed here.
-
         await Order.findByIdAndDelete(orderId);
         console.log(`Order ${order.orderIdString} (ID: ${orderId}) deleted by customer ${req.user.userId}`);
         res.json({ message: 'Order deleted successfully.' });
-
     } catch (error) {
         console.error("Error deleting order:", error);
         if (error.kind === 'ObjectId') {

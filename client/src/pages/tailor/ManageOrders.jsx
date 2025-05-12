@@ -138,7 +138,7 @@ const ManageOrders = () => {
     };
 
     // ... (loading, error, auth check JSX remains the same) ...
-    if (authLoading) { /* ... */ }
+    if (authLoading) { console.log("hello"); }
     if (!user || user.userType !== 'tailor') { /* ... */ }
     if (pageLoading) { /* ... */ }
     if (error) { /* ... */ }
@@ -197,7 +197,7 @@ const ManageOrders = () => {
                                         <TableHead>Service(s)</TableHead>
                                         <TableHead className="w-[120px]">Order Date</TableHead>
                                         <TableHead className="w-[120px] text-right">Total</TableHead>
-                                        <TableHead className="w-[200px]">Status</TableHead> {/* Width for select */}
+                                        <TableHead className="w-[200px]">Status</TableHead>
                                         <TableHead className="w-[100px] text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
