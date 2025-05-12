@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     address: { type: String },
     city: { type: String, required: true },
-    userType: { type: String, required: true, enum: ['customer', 'tailor'], default: 'customer' }, // Default to 'customer'
+    userType: { type: String, required: true, enum: ['customer', 'tailor', 'admin'], default: 'customer' }, // Default to 'customer'
 }, { timestamps: true });
 
 

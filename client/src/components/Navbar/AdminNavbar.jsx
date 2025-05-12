@@ -38,7 +38,6 @@ const AdminNavbar = () => {
         { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={18} /> },
         { name: 'Customers', path: '/admin/customers', icon: <UserCircle size={18} /> },
         { name: 'Tailors', path: '/admin/tailors', icon: <Ruler size={18} /> },
-        { name: 'Earnings', path: '/admin/earnings', icon: <DollarSign size={18} /> }
     ];
 
     const dropdownItems = [

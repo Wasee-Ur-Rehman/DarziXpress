@@ -9,6 +9,10 @@ import orderRoutes from './routes/orderRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import earningRoutes from './routes/earningRoutes.js';
+import adminUserRoutes from './routes/adminUserRoutes.js';
+import adminSetupRoutes from './routes/adminSetupRoutes.js';
+import adminStatsRoutes from './routes/adminStatsRoutes.js';
+import adminOrderRoutes from './routes/adminOrderRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -32,6 +36,10 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/earnings', earningRoutes);
+app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin-setup', adminSetupRoutes);
+app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/admin/orders', adminOrderRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

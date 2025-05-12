@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } // Added useNavigate
     from 'react-router-dom';
-import { Package, CalendarDays, Clock, CircleCheck, CircleAlert, Trash2, Loader2, AlertTriangle, AlertCircle, CircleDollarSign } from 'lucide-react'; // Added Trash2, Loader2, AlertTriangle
+import { Package, CalendarDays, Clock, CircleCheck, CircleAlert, Trash2, Loader2, AlertTriangle, AlertCircle, CircleDollarSign, CheckCircle } from 'lucide-react'; // Added Trash2, Loader2, AlertTriangle
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';

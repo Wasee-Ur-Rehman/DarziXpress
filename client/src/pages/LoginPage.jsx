@@ -41,6 +41,8 @@ export default function LoginPage() {
                     navigate('/customer/dashboard'); // Ensure this route is correct
                 } else if (data.userType === 'tailor') {
                     navigate('/tailor/dashboard'); // Ensure this route is correct
+                } else if (data.userType === 'admin') {
+                    navigate('/admin/dashboard');
                 } else {
                     navigate('/'); // Fallback navigation
                 }
