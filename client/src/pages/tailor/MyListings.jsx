@@ -1,94 +1,214 @@
-import React, { useState } from 'react';
-import { Select, SelectItem } from '@/components/ui/select';
+// /pages/tailor/MyServicesPage.jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Loader2, PlusCircle, Edit3, Trash2, Eye, ListChecks, ImageIcon, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
+
+// ServiceCardTailorView component - REMOVED onToggleActive
+const ServiceCardTailorView = ({ service, onEdit, onDelete }) => (
+  <Card className="flex flex-col h-full group">
+    <div className="relative overflow-hidden rounded-t-lg">
+      <img
+        src={service.images && service.images.length > 0 ? service.images[0] : 'https://via.placeholder.com/300x200/E2E8F0/94A3B8?text=Service'}
+        alt={service.serviceName}
+        className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+      {!service.isActive && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+          <span className="text-white font-semibold px-3 py-1 bg-slate-700/90 rounded text-xs tracking-wider">INACTIVE</span>
+        </div>
+      )}
+    </div>
+    <CardHeader className="pb-2 pt-3">
+      <CardTitle className="text-md leading-tight line-clamp-2 h-[2.25em] group-hover:text-indigo-600 transition-colors">{service.serviceName}</CardTitle>
+      <CardDescription className="text-xs line-clamp-1">Category: {service.category}</CardDescription>
+    </CardHeader>
+    <CardContent className="flex-grow space-y-1 pb-2 text-sm">
+      <p><span className="font-medium">Price:</span> PKR {service.price.toLocaleString()} ({service.priceType})</p>
+      <p><span className="font-medium">Location:</span> {service.location}</p>
+      {service.estimatedDuration && <p><span className="font-medium">Duration:</span> {service.estimatedDuration}</p>}
+    </CardContent>
+    <CardFooter className="grid grid-cols-2 gap-2 pt-3"> {/* Changed to 2 cols */}
+      <Button variant="outline" size="sm" onClick={() => onEdit(service._id)} className="w-full">
+        <Edit3 size={14} className="mr-1.5" /> Edit
+      </Button>
+      <Button variant="destructive" size="sm" onClick={() => onDelete(service._id)} className="w-full">
+        <Trash2 size={14} className="mr-1.5" /> Delete
+      </Button>
+    </CardFooter>
+  </Card>
+);
+
 
 const MyListings = () => {
-  const [orderFilter, setOrderFilter] = useState('All');
+  const { authToken, user, authLoading, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // Sample services data
-  const services = [
-    {
-      title: "Men's 2-Piece Suit Stitching",
-      category: "Men's Formal",
-      price: 8500,
-      availability: "Fixed",
-      provider: "Ali Tailors",
-      location: "Lahore",
-      rating: "4.5",
-      thumbnail: "https://via.placeholder.com/300x200?text=2-Piece+Suit",
-      assignedOrders: 10, // Number of orders assigned for this service
-    },
-    {
-      title: "Bridal Dress Designing",
-      category: "Women's Bridal",
-      price: 20000,
-      availability: "Flexible",
-      provider: "Zahra Couture",
-      location: "Karachi",
-      rating: "4.8",
-      thumbnail: "https://via.placeholder.com/300x200?text=Bridal+Dress",
-      assignedOrders: 0, // No orders assigned
-    },
-    {
-      title: "Casual Shirt Stitching",
-      category: "Men's Casual",
-      price: 2500,
-      availability: "Fixed",
-      provider: "Hassan Stitching House",
-      location: "Islamabad",
-      rating: "4.2",
-      thumbnail: "https://via.placeholder.com/300x200?text=Casual+Shirt",
-      assignedOrders: 5, // 5 orders assigned for this service
-    },
-  ];
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [actionError, setActionError] = useState(''); // For errors during delete/edit actions
+  const [actionSuccess, setActionSuccess] = useState(''); // For success messages
 
-  // Filtering logic based on the number of orders assigned
-  const filteredServices = services.filter(service => {
-    if (orderFilter === 'All') return true;
-    if (orderFilter === 'With Orders' && service.assignedOrders > 0) return true;
-    if (orderFilter === 'No Orders' && service.assignedOrders === 0) return true;
-    return false;
-  });
+
+  const fetchMyServices = useCallback(async () => {
+    if (!authToken || !user?.userId || user.userType !== 'tailor') {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setActionError('');
+    setActionSuccess('');
+    try {
+      const response = await fetch(`/api/services?tailorId=${user.userId}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+      });
+      if (!response.ok) {
+        if (response.status === 401) { logout(); navigate('/login'); return; }
+        const errData = await response.json().catch(() => ({ message: "Failed to fetch your services" }));
+        throw new Error(errData.message || `Error: ${response.status}`);
+      }
+      const data = await response.json();
+      setServices(data.services || []);
+    } catch (err) {
+      console.error('Error fetching my services:', err);
+      setError(err.message);
+      setServices([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [authToken, user, logout, navigate]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      fetchMyServices();
+    }
+  }, [authLoading, fetchMyServices]);
+
+  const handleEditService = (serviceId) => {
+    navigate(`/tailor/edit-service/${serviceId}`); // Navigate to your edit service page
+  };
+
+  const handleDeleteService = async (serviceId) => {
+    if (!authToken) {
+      setActionError("Authentication error.");
+      return;
+    }
+    if (window.confirm("Are you sure you want to permanently delete this service listing? This action cannot be undone.")) {
+      setActionError('');
+      setActionSuccess('');
+      try {
+        const response = await fetch(`/api/services/${serviceId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({ message: "Failed to delete service." }));
+          throw new Error(errData.message);
+        }
+        setActionSuccess('Service deleted successfully.');
+        fetchMyServices(); // Refresh list
+      } catch (err) {
+        console.error('Error deleting service:', err);
+        setActionError(`Failed to delete service: ${err.message}`);
+      }
+    }
+  };
+
+  // Removed handleToggleActive
+
+  if (authLoading) { /* ... loading UI ... */ }
+  if (!user || user.userType !== 'tailor') { /* ... access denied UI ... */ }
+  // Conditional Rendering for Loading, Error, No Services, and Service List
+  let content;
+  if (loading) {
+    content = (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+      </div>
+    );
+  } else if (error) {
+    content = (
+      <Card className="text-center py-10 bg-red-50 border-red-200">
+        <CardContent>
+          <AlertTriangle size={48} className="mx-auto text-red-500 mb-4" />
+          <p className="text-xl font-semibold text-red-700">Error Loading Services</p>
+          <p className="text-red-600 mt-1 mb-4">{error}</p>
+          <Button variant="outline" onClick={fetchMyServices} className="mt-3 border-red-300 text-red-700 hover:bg-red-100">
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  } else if (services.length === 0) {
+    content = (
+      <Card className="text-center py-20">
+        <CardContent>
+          <ImageIcon size={60} className="mx-auto text-slate-400 mb-6" />
+          <p className="text-xl font-semibold text-slate-700">You haven't posted any services yet.</p>
+          <p className="text-slate-500 mt-2 mb-6">
+            Click the button below to list your first tailoring service and reach new customers!
+          </p>
+          <Link to="/tailor/post-service">
+            <Button size="lg">
+              <PlusCircle size={20} className="mr-2" /> Post Your First Service
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  } else {
+    content = (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {services.map(service => (
+          <ServiceCardTailorView
+            key={service._id}
+            service={service}
+            onEdit={handleEditService}
+            onDelete={handleDeleteService}
+          />
+        ))}
+      </div>
+    );
+  }
+
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">My Posted Services</h2>
+    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        <header className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 flex items-center">
+              <ListChecks size={30} className="mr-3 text-indigo-600" /> My Posted Services
+            </h1>
+            <p className="text-md text-slate-600 mt-1">
+              Manage all your service listings ({services.length} total).
+            </p>
+          </div>
+          <Link to="/tailor/post-service">
+            <Button>
+              <PlusCircle size={18} className="mr-2" /> Post New Service
+            </Button>
+          </Link>
+        </header>
 
-      {/* Order Assigned Filter Dropdown */}
-      <div className="mb-4 flex justify-end">
-        <div className="w-48">
-          <Select onChange={(e) => setOrderFilter(e.target.value)}>
-            <SelectItem value="All">All</SelectItem>
-            <SelectItem value="With Orders">With Orders</SelectItem>
-            <SelectItem value="No Orders">No Orders</SelectItem>
-          </Select>
-        </div>
-      </div>
-
-      {/* Listings */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredServices.length === 0 ? (
-          <p className="text-gray-500">No services found with the selected filter.</p>
-        ) : (
-          filteredServices.map((service, index) => (
-            <div
-              key={index}
-              className="border rounded-lg p-4 shadow hover:shadow-md transition"
-            >
-              {service.thumbnail && (
-                <img
-                  src={service.thumbnail}
-                  alt="Service Thumbnail"
-                  className="h-40 w-full object-cover rounded mb-3"
-                />
-              )}
-              <h3 className="text-xl font-semibold">{service.title}</h3>
-              <p className="text-sm text-gray-600">Category: {service.category}</p>
-              <p className="text-sm text-gray-600">Price: PKR {service.price}</p>
-              <p className="text-sm text-gray-600">Availability: {service.availability}</p>
-              <p className="text-sm">Assigned Orders: {service.assignedOrders}</p>
-            </div>
-          ))
+        {/* Action messages */}
+        {actionError && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-md flex items-center">
+            <AlertTriangle size={18} className="mr-2" /> {actionError}
+          </div>
         )}
+        {actionSuccess && (
+          <div className="mb-4 p-3 bg-green-50 text-green-700 border border-green-200 rounded-md">
+            {actionSuccess}
+          </div>
+        )}
+
+        {/* Removed the filter Card */}
+        {content}
       </div>
     </div>
   );

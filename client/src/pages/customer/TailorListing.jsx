@@ -1,69 +1,53 @@
-// /pages/customer/ServiceListingPage.jsx (or whatever you named it)
-import React, { useState, useEffect, useMemo } from 'react';
+// /pages/customer/ServiceListingPage.jsx
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
-    Search as SearchIconLucide, // Renamed to avoid conflict if you have a Search component
-    MapPin,
-    DollarSign,
-    Star,
-    ChevronDown, // This was used by the simplified Select, may not be needed if using full shadcn/ui Select
-    Filter as FilterIconLucide, // Renamed
-    X,
-    ShoppingBag
+    Search as SearchIconLucide, MapPin, DollarSign, Star,
+    Filter as FilterIconLucide, X, ShoppingBag, Loader2
 } from 'lucide-react';
 
-// Import your UI components (assuming they are in @/components/ui/)
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'; // Import all parts
-import { Select } from '@/components/ui/select'; // Assuming your simplified Select for now
-import { Label } from '@/components/ui/label'; // Assuming you have this
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+// import { useAuth } from '@/context/AuthContext'; // Not strictly needed for public listing, but useful if actions require auth
 
-
-// Mock Data for Services Offered by Tailors
-const mockServicesData = [
-    { serviceId: 'S001', tailorId: 1, tailorName: 'Ahmad Custom Wear', tailorRating: 4.5, serviceName: "Men's 2-Piece Suit Stitching", category: "Men's Formal", location: 'Lahore', price: 8500, priceType: 'Fixed', image: 'https://via.placeholder.com/300x200/A0A0FF/FFFFFF?text=Men+Suit' },
-    { serviceId: 'S002', tailorId: 1, tailorName: 'Ahmad Custom Wear', tailorRating: 4.5, serviceName: "Custom Sherwani Design", category: "Men's Ethnic", location: 'Lahore', price: 15000, priceType: 'Starting at', image: 'https://via.placeholder.com/300x200/A0A0FF/FFFFFF?text=Sherwani' },
-    { serviceId: 'S003', tailorId: 2, tailorName: 'Sara Boutique', tailorRating: 4.8, serviceName: "Bridal Lehenga Stitching", category: "Women's Bridal", location: 'Karachi', price: 25000, priceType: 'Starting at', image: 'https://via.placeholder.com/300x200/FFA0A0/FFFFFF?text=Bridal+Lehenga' },
-    { serviceId: 'S004', tailorId: 2, tailorName: 'Sara Boutique', tailorRating: 4.8, serviceName: "Formal Dress Alterations", category: "Alterations", location: 'Karachi', price: 1500, priceType: 'Per piece', image: 'https://via.placeholder.com/300x200/FFA0A0/FFFFFF?text=Dress+Alteration' },
-    { serviceId: 'S005', tailorId: 3, tailorName: 'Modern Stitches', tailorRating: 4.2, serviceName: "Kurta Pajama Set", category: "Men's Casual", location: 'Islamabad', price: 3500, priceType: 'Fixed', image: 'https://via.placeholder.com/300x200/A0FFA0/FFFFFF?text=Kurta+Pajama' },
-    { serviceId: 'S006', tailorId: 4, tailorName: 'The Perfect Fit', tailorRating: 4.6, serviceName: "Pant Coat Stitching (Standard)", category: "Men's Formal", location: 'Lahore', price: 9000, priceType: 'Fixed', image: 'https://via.placeholder.com/300x200/A0A0FF/FFFFFF?text=Pant+Coat' },
-];
-
-// Derive filter options from data
-const allLocations = [...new Set(mockServicesData.map(s => s.location))].sort();
-const allCategories = [...new Set(mockServicesData.map(s => s.category))].sort();
-const priceTiers = [
-    { value: 'low', label: 'Under PKR 5,000', min: 0, max: 4999 },
-    { value: 'mid', label: 'PKR 5,000 - PKR 10,000', min: 5000, max: 10000 },
-    { value: 'high', label: 'Over PKR 10,000', min: 10001, max: Infinity },
-];
-
-// Renamed this to avoid conflict with imported Card component
+// ServiceDisplayCard remains largely the same, but ensure props match API response
 const ServiceDisplayCard = ({ service }) => (
-    <Card className="flex flex-col transition-shadow hover:shadow-xl">
-        <img src={service.image || 'https://via.placeholder.com/300x200/E2E8F0/94A3B8?text=Service'} alt={service.serviceName} className="w-full h-44 object-cover" />
-        {/* Using imported Card parts */}
-        <CardHeader className="pb-2">
-            <CardTitle className="text-base leading-tight">{service.serviceName}</CardTitle>
-            <CardDescription>Category: {service.category}</CardDescription>
+    <Card className="flex flex-col transition-shadow hover:shadow-xl group">
+        <div className="overflow-hidden">
+            <img
+                src={service.images && service.images.length > 0 ? service.images[0] : 'https://via.placeholder.com/300x200/E2E8F0/94A3B8?text=Service'}
+                alt={service.serviceName}
+                className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+        </div>
+        <CardHeader className="pb-2 pt-4">
+            <CardTitle className="text-base leading-tight line-clamp-2 h-[2.5em]">{service.serviceName}</CardTitle> {/* Fixed height for title */}
+            <CardDescription className="text-xs line-clamp-1">Category: {service.category}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow space-y-2 pb-3">
             <div className="text-sm">
                 <p className="font-semibold text-indigo-700">PKR {service.price.toLocaleString()}</p>
-                <p className="text-xs text-slate-500">{service.priceType}</p>
+                <p className="text-xs text-slate-500">{service.priceType} {service.estimatedDuration ? `• ${service.estimatedDuration}` : ''}</p>
             </div>
             <div className="border-t border-slate-100 pt-2 text-xs text-slate-600">
                 <p>By: <span className="font-medium text-slate-700">{service.tailorName}</span></p>
                 <div className="flex items-center text-slate-500">
                     <MapPin size={12} className="mr-1 flex-shrink-0" /> {service.location}
-                    <span className="mx-1.5">·</span>
-                    <Star size={12} className="mr-0.5 fill-amber-400 text-amber-500" /> {service.tailorRating.toFixed(1)}
+                    {/* Assuming tailor object is populated with rating if you want to show it here */}
+                    {service.tailor?.rating && ( // Check if tailor and rating exist
+                        <>
+                            <span className="mx-1.5">·</span>
+                            <Star size={12} className="mr-0.5 fill-amber-400 text-amber-500" /> {service.tailor.rating.toFixed(1)}
+                        </>
+                    )}
                 </div>
             </div>
         </CardContent>
         <CardFooter>
-            <Link to={`/customer/service-details/${service.serviceId}`} className="w-full">
+            <Link to={`/customer/service-details/${service._id}`} className="w-full"> {/* Use service._id */}
                 <Button variant="secondary" className="w-full hover:bg-indigo-100 hover:text-indigo-700">
                     View Service Details
                 </Button>
@@ -77,47 +61,108 @@ const ServiceListingPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [filterOptions, setFilterOptions] = useState({ locations: [], categories: [] });
+    const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalServices: 0 });
+
+
+    // Filters state
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedLocation, setSelectedLocation] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [selectedPriceTier, setSelectedPriceTier] = useState('');
+    const [selectedPriceTier, setSelectedPriceTier] = useState(''); // This will translate to min/maxPrice
+
+    // Price tiers for frontend filter UI
+    const priceTiers = [
+        { value: '', label: 'Any Price' },
+        { value: 'low', label: 'Under PKR 5,000', min: 0, max: 4999 },
+        { value: 'mid', label: 'PKR 5,000 - PKR 10,000', min: 5000, max: 10000 },
+        { value: 'high', label: 'Over PKR 10,000', min: 10001, max: undefined }, // Max undefined for 'over'
+    ];
+
+    // Debounce search term
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
     useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const query = params.get('search');
-        setSearchTerm(query || '');
-    }, [location.search]);
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // 500ms debounce
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
-    const filteredServices = useMemo(() => {
-        let services = mockServicesData;
-        if (searchTerm) {
-            const lowerSearchTerm = searchTerm.toLowerCase();
-            services = services.filter(s =>
-                s.serviceName.toLowerCase().includes(lowerSearchTerm) ||
-                s.tailorName.toLowerCase().includes(lowerSearchTerm) ||
-                s.category.toLowerCase().includes(lowerSearchTerm)
-            );
-        }
-        if (selectedLocation) services = services.filter(s => s.location === selectedLocation);
-        if (selectedCategory) services = services.filter(s => s.category === selectedCategory);
-        if (selectedPriceTier) {
-            const tier = priceTiers.find(t => t.value === selectedPriceTier);
-            if (tier) services = services.filter(s => s.price >= tier.min && s.price <= tier.max);
-        }
-        return services;
-    }, [searchTerm, selectedLocation, selectedCategory, selectedPriceTier]);
 
-    const handleSearchChange = (e) => {
-        const newSearchTerm = e.target.value;
-        setSearchTerm(newSearchTerm);
+    // Effect to get initial search term from URL
+    useEffect(() => {
         const params = new URLSearchParams(location.search);
-        if (newSearchTerm) params.set('search', newSearchTerm);
-        else params.delete('search');
+        const querySearch = params.get('search');
+        const queryLocation = params.get('location');
+        const queryCategory = params.get('category');
+        const queryPrice = params.get('price');
+
+        setSearchTerm(querySearch || '');
+        setSelectedLocation(queryLocation || '');
+        setSelectedCategory(queryCategory || '');
+        setSelectedPriceTier(queryPrice || '');
+        // Initial fetch will be triggered by dependency change on these filters
+    }, []); // Only on mount to read initial URL params
+
+    // Central data fetching function
+    const fetchServices = useCallback(async (page = 1) => {
+        setLoading(true);
+        setError(null);
+
+        const params = new URLSearchParams();
+        if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
+        if (selectedLocation) params.append('location', selectedLocation);
+        if (selectedCategory) params.append('category', selectedCategory);
+
+        const tier = priceTiers.find(t => t.value === selectedPriceTier);
+        if (tier) {
+            if (tier.min !== undefined) params.append('minPrice', tier.min.toString());
+            if (tier.max !== undefined) params.append('maxPrice', tier.max.toString());
+        }
+        params.append('page', page.toString());
+        // params.append('limit', '12'); // Or your desired limit
+
+        // Update URL with current filters
         navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    };
+
+
+        try {
+            const response = await fetch(`/api/services?${params.toString()}`); // Using Vite proxy
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ message: "Failed to fetch services" }));
+                throw new Error(errData.message || `Error: ${response.status}`);
+            }
+            const data = await response.json();
+            setServices(data.services || []);
+            setFilterOptions(data.filters || { locations: [], categories: [] });
+            setPagination({
+                currentPage: data.currentPage,
+                totalPages: data.totalPages,
+                totalServices: data.totalServices
+            });
+        } catch (err) {
+            console.error("ServiceListingPage fetch error:", err);
+            setError(err.message);
+            setServices([]); // Clear services on error
+        } finally {
+            setLoading(false);
+        }
+    }, [debouncedSearchTerm, selectedLocation, selectedCategory, selectedPriceTier, navigate, location.pathname]); // Add priceTier
+
+    // Fetch services when filters or page change
+    useEffect(() => {
+        fetchServices(pagination.currentPage);
+    }, [fetchServices, pagination.currentPage]); // pagination.currentPage added
+
 
     const handleFilterChange = (setter, value) => {
-        setter(value);
+        setter(value === "ALL" || value === "" ? "" : value); // Treat "ALL" or empty as no filter
+        setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to page 1 on filter change
     };
 
     const clearFilters = () => {
@@ -125,9 +170,17 @@ const ServiceListingPage = () => {
         setSelectedLocation('');
         setSelectedCategory('');
         setSelectedPriceTier('');
-        navigate(location.pathname, { replace: true });
+        setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to page 1
+        // Fetch will be triggered by state changes in useEffect for fetchServices
     };
-    const activeFilterCount = [searchTerm, selectedLocation, selectedCategory, selectedPriceTier].filter(val => val !== '').length;
+
+    const activeFilterCount = [debouncedSearchTerm, selectedLocation, selectedCategory, selectedPriceTier].filter(Boolean).length;
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.totalPages) {
+            setPagination(prev => ({ ...prev, currentPage: newPage }));
+        }
+    };
 
 
     return (
@@ -142,7 +195,7 @@ const ServiceListingPage = () => {
                     </p>
                 </header>
 
-                <Card className="p-4 sm:p-6 mb-8">
+                <Card className="p-4 sm:p-6 mb-8 sticky top-[calc(4rem+1px)] z-40 bg-white/80 backdrop-blur-sm"> {/* Navbar is h-16 (4rem) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                         <div className="lg:col-span-4">
                             <Label htmlFor="main-search">Search Services</Label>
@@ -154,8 +207,8 @@ const ServiceListingPage = () => {
                                     id="main-search"
                                     type="text"
                                     placeholder="Search by service, tailor, or category..."
-                                    value={searchTerm}
-                                    onChange={handleSearchChange}
+                                    value={searchTerm} // Controlled by searchTerm for immediate UI update
+                                    onChange={(e) => setSearchTerm(e.target.value)} // Updates searchTerm, which then updates debouncedSearchTerm
                                     className="pl-10"
                                 />
                             </div>
@@ -163,73 +216,86 @@ const ServiceListingPage = () => {
 
                         <div>
                             <Label htmlFor="location-filter">Location</Label>
-                            <Select
-                                id="location-filter"
-                                value={selectedLocation}
-                                onChange={(e) => handleFilterChange(setSelectedLocation, e.target.value)}
-                            >
+                            <Select id="location-filter" value={selectedLocation} onChange={(e) => handleFilterChange(setSelectedLocation, e.target.value)}>
                                 <option value="">All Locations</option>
-                                {allLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                                {filterOptions.locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                             </Select>
                         </div>
-
                         <div>
                             <Label htmlFor="category-filter">Category</Label>
-                            <Select
-                                id="category-filter"
-                                value={selectedCategory}
-                                onChange={(e) => handleFilterChange(setSelectedCategory, e.target.value)}
-                            >
+                            <Select id="category-filter" value={selectedCategory} onChange={(e) => handleFilterChange(setSelectedCategory, e.target.value)}>
                                 <option value="">All Categories</option>
-                                {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                {filterOptions.categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </Select>
                         </div>
-
-                        {/* Move Price Range dropdown next to Category filter */}
                         <div>
                             <Label htmlFor="price-filter">Price Range</Label>
-                            <Select
-                                id="price-filter"
-                                value={selectedPriceTier}
-                                onChange={(e) => handleFilterChange(setSelectedPriceTier, e.target.value)}
-                            >
-                                <option value="">Any Price</option>
+                            <Select id="price-filter" value={selectedPriceTier} onChange={(e) => handleFilterChange(setSelectedPriceTier, e.target.value)}>
                                 {priceTiers.map(tier => <option key={tier.value} value={tier.value}>{tier.label}</option>)}
                             </Select>
                         </div>
 
-                        {/* Clear Filter button on a new line */}
                         {activeFilterCount > 0 ? (
-                            <div className="lg:col-span-4">
-                                <Button variant="outline" onClick={clearFilters} className="self-end h-10">
-                                    <X size={16} className="mr-2" /> Clear ({activeFilterCount})
-                                </Button>
-                            </div>
-                        ) : <div className="h-10"></div>}
+                            <Button variant="outline" onClick={clearFilters} className="self-end h-10">
+                                <X size={16} className="mr-2" /> Clear ({activeFilterCount})
+                            </Button>
+                        ) : <div className="h-10 hidden lg:block"></div> /* Placeholder for alignment */}
                     </div>
                 </Card>
 
-
-                {(searchTerm || activeFilterCount > 0) && filteredServices.length > 0 && (
-                    <p className="text-sm text-slate-600 mb-6 text-center sm:text-left">
-                        Found <span className="font-semibold text-indigo-600">{filteredServices.length}</span> service(s) matching your criteria.
-                    </p>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredServices.length === 0 ? (
-                        <div className="col-span-full text-center py-12">
-                            <FilterIconLucide size={48} className="mx-auto text-slate-400 mb-4" />
-                            <p className="text-xl font-semibold text-slate-700 mb-2">No Services Found</p>
-                            <p className="text-slate-500 mb-4">Try adjusting your search or filters.</p>
-                            {activeFilterCount > 0 && <Button onClick={clearFilters}>Clear All Filters</Button>}
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+                    </div>
+                ) : error ? (
+                    <div className="col-span-full text-center py-12 text-red-600">
+                        <p>Error loading services: {error}</p>
+                        <Button variant="outline" onClick={() => fetchServices(1)} className="mt-4">Try Again</Button>
+                    </div>
+                ) : services.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                        <FilterIconLucide size={48} className="mx-auto text-slate-400 mb-4" />
+                        <p className="text-xl font-semibold text-slate-700 mb-2">No Services Found</p>
+                        <p className="text-slate-500 mb-4">Try adjusting your search or filters.</p>
+                        {activeFilterCount > 0 && <Button onClick={clearFilters}>Clear All Filters</Button>}
+                    </div>
+                ) : (
+                    <>
+                        <p className="text-sm text-slate-600 mb-6 text-center sm:text-left">
+                            Showing <span className="font-semibold">{services.length}</span> of <span className="font-semibold text-indigo-600">{pagination.totalServices}</span> service(s).
+                            Page <span className="font-semibold">{pagination.currentPage}</span> of <span className="font-semibold">{pagination.totalPages}</span>.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {services.map((service) => (
+                                <ServiceDisplayCard key={service._id} service={service} /> // Use _id
+                            ))}
                         </div>
-                    ) : (
-                        filteredServices.map((service) => (
-                            <ServiceDisplayCard key={service.serviceId} service={service} />
-                        ))
-                    )}
-                </div>
+                        {/* Pagination Controls */}
+                        {pagination.totalPages > 1 && (
+                            <div className="flex justify-center items-center space-x-2 mt-10">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                    disabled={pagination.currentPage === 1}
+                                >
+                                    Previous
+                                </Button>
+                                <span className="text-sm text-slate-600">
+                                    Page {pagination.currentPage} of {pagination.totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                    disabled={pagination.currentPage === pagination.totalPages}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );
