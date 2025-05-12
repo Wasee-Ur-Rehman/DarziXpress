@@ -1,34 +1,43 @@
 // /App.jsx
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './pages/landingPage.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import SignUpPage from './pages/SignUpPage.jsx';
-import CustomerLayout from './layouts/CustomerLayout';  // Import CustomerLayout
-import CustomerDashboard from './pages/customer/CustomerDashboard.jsx';   // Import Dashboard
-import Orders from './pages/customer/Orders';         // Import Orders
-import Profile from './pages/customer/ProfileInfo'; // Import Profile
-import Measurements from './pages/customer/Measurements'; // Import Measurements
-import TailorListing from './pages/customer/TailorListing'; // Import TailorListing
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import LandingPage from "./pages/landingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import SignUpPage from "./pages/SignUpPage.jsx";
+import CustomerLayout from "./layouts/CustomerLayout"; // Import CustomerLayout
+import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx"; // Import Dashboard
+import Orders from "./pages/customer/Orders"; // Import Orders
+import Profile from "./pages/customer/ProfileInfo"; // Import Profile
+import Measurements from "./pages/customer/Measurements"; // Import Measurements
+import TailorListing from "./pages/customer/TailorListing"; // Import TailorListing
+import ChangePassword from "./pages/ChangePassword.jsx"; // Import ChangePassword
 
-import ChangePassword from './pages/ChangePassword.jsx'; // Import ChangePassword
-
+// Admin imports
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import OrdersAdmin from "./pages/admin/OrdersAdmin.jsx";
+import ManageProfile from "./pages/admin/ManageProfile.jsx";
 
 //tailor imports
 // Tailor Layout and Pages
-import TailorLayout from './layouts/TailorLayout.jsx';
-import TailorDashboard from './pages/tailor/TailorDashboard.jsx';
-import ManageOrders from './pages/tailor/ManageOrders.jsx';
-import TailorMeasurements from './pages/tailor/TailorMeasurements.jsx';
-import MyListings from './pages/tailor/MyListings.jsx';
-import PostServiceForm from './pages/tailor/PostServiceForm.jsx';
-import MyEarnings from './pages/tailor/MyEarnings.jsx';
-import OrderDetails from './pages/tailor/OrderDetails.jsx';
+import TailorLayout from "./layouts/TailorLayout.jsx";
+import TailorDashboard from "./pages/tailor/TailorDashboard.jsx";
+import ManageOrders from "./pages/tailor/ManageOrders.jsx";
+import TailorMeasurements from "./pages/tailor/TailorMeasurements.jsx";
+import MyListings from "./pages/tailor/MyListings.jsx";
+import PostServiceForm from "./pages/tailor/PostServiceForm.jsx";
+import MyEarnings from "./pages/tailor/MyEarnings.jsx";
+import OrderDetails from "./pages/tailor/OrderDetails.jsx";
 // import TailorProfile from './pages/tailor/TailorProfile.jsx';
 // import TailorSettings from './pages/tailor/TailorSettings.jsx';
 
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
@@ -63,6 +72,12 @@ const App = () => {
             <Route path="orders/:id" element={<OrderDetails />} />
             <Route path="changePassword" element={<ChangePassword />} />
             <Route path="profile" element={<Profile />} />
+          </Route>
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="orders" element={<OrdersAdmin />} />
+            <Route path="manage-profile" element={<ManageProfile />} />
           </Route>
         </Routes>
       </Router>
