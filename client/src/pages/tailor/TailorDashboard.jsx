@@ -155,7 +155,7 @@ const TailorDashboard = () => {
             </CardContent>
             <CardFooter className="pt-0">
               <Button variant="outline" size="sm" asChild className="w-full">
-                <Link to="/tailor/my-services">Manage Services</Link>
+                <Link to="/tailor/listings">Manage Services</Link>
               </Button>
             </CardFooter>
           </Card>

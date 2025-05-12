@@ -11,10 +11,12 @@ const ServiceCardTailorView = ({ service, onEdit, onDelete }) => (
   <Card className="flex flex-col h-full group">
     <div className="relative overflow-hidden rounded-t-lg">
       <img
-        src={service.images && service.images.length > 0 ? service.images[0] : 'https://via.placeholder.com/300x200/E2E8F0/94A3B8?text=Service'}
+        src={service.images && service.images.length > 0 ? service.images[0].replace("unsplash.com/photos", "unsplash.com/photo") : '/images/default-service-image.jpg'}
         alt={service.serviceName}
-        className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-40 object-fill transition-transform duration-300 group-hover:scale-105 rounded-t-lg" // Tailwind for image styling
+        onError={(e) => e.target.src = '/images/alternateImg.jpg'}
       />
+
       {!service.isActive && (
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
           <span className="text-white font-semibold px-3 py-1 bg-slate-700/90 rounded text-xs tracking-wider">INACTIVE</span>

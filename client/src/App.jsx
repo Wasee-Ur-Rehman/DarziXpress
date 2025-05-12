@@ -1,3 +1,4 @@
+// src/App.js
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -9,23 +10,17 @@ import {
 import LandingPage from "./pages/landingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import SignUpPage from "./pages/SignUpPage.jsx";
-import CustomerLayout from "./layouts/CustomerLayout"; // Import CustomerLayout
-import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx"; // Import Dashboard
-import Orders from "./pages/customer/Orders"; // Import Orders
-import Profile from "./pages/customer/ProfileInfo"; // Import Profile
-import Measurements from "./pages/customer/Measurements"; // Import Measurements
-import TailorListing from "./pages/customer/TailorListing"; // Import TailorListing
+import CustomerLayout from "./layouts/CustomerLayout";
+import CustomerDashboard from "./pages/customer/CustomerDashboard.jsx";
+import Orders from "./pages/customer/Orders";
+import Profile from "./pages/customer/ProfileInfo";
+import Measurements from "./pages/customer/Measurements";
+import TailorListing from "./pages/customer/TailorListing";
 import CustomerManagement from "./pages/admin/CustomerManagement.jsx";
-
-import ChangePassword from "./pages/ChangePassword.jsx"; // Import ChangePassword
+import ChangePassword from "./pages/ChangePassword.jsx";
 import ServiceDetailPage from "./pages/ServiceDetailPage.jsx";
-
-// Admin imports
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
-
-//tailor imports
-// Tailor Layout and Pages
 import TailorLayout from "./layouts/TailorLayout.jsx";
 import TailorDashboard from "./pages/tailor/TailorDashboard.jsx";
 import ManageOrders from "./pages/tailor/ManageOrders.jsx";
@@ -35,10 +30,8 @@ import MyEarnings from "./pages/tailor/MyEarnings.jsx";
 import OrderDetails from "./pages/tailor/OrderDetails.jsx";
 import TailorManagement from "./pages/admin/TailorManagement.jsx";
 
-
-
 import { AuthProvider } from "./context/AuthContext";
-
+import AuthWrapper from "./components/AuthWrapper"; // Import the wrapper
 
 const App = () => {
   return (
@@ -51,7 +44,14 @@ const App = () => {
           <Route path="/signup" element={<SignUpPage />} />
 
           {/* Customer Routes */}
-          <Route path="/customer" element={<CustomerLayout />}>
+          <Route
+            path="/customer"
+            element={
+              <AuthWrapper allowedRoles={["customer"]}>
+                <CustomerLayout />
+              </AuthWrapper>
+            }
+          >
             <Route index element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<CustomerDashboard />} />
             <Route path="orders" element={<Orders />} />
@@ -59,14 +59,18 @@ const App = () => {
             <Route path="measurements" element={<Measurements />} />
             <Route path="changePassword" element={<ChangePassword />} />
             <Route path="listing" element={<TailorListing />} />
-            <Route
-              path="service-details/:serviceId"
-              element={<ServiceDetailPage />}
-            />
+            <Route path="service-details/:serviceId" element={<ServiceDetailPage />} />
           </Route>
 
           {/* Tailor Routes */}
-          <Route path="/tailor" element={<TailorLayout />}>
+          <Route
+            path="/tailor"
+            element={
+              <AuthWrapper allowedRoles={["tailor"]}>
+                <TailorLayout />
+              </AuthWrapper>
+            }
+          >
             <Route index element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<TailorDashboard />} />
             <Route path="orders" element={<ManageOrders />} />
@@ -82,13 +86,15 @@ const App = () => {
             <Route path="profile" element={<Profile />} />
           </Route>
 
-          {/* Admin Routes
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-          </Route> */}
-
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <AuthWrapper allowedRoles={["admin"]}>
+                <AdminLayout />
+              </AuthWrapper>
+            }
+          >
             <Route index element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="customers" element={<CustomerManagement />} />

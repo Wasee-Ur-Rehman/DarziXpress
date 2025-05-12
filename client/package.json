@@ -27,6 +27,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.0",
     "recharts": "^2.15.3",
+    "resend": "^4.5.1",
     "shadcn-vite-js-template": "file:",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"

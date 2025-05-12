@@ -110,101 +110,101 @@ const ServiceDetailPage = () => {
         setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
     };
 
-   const handlePlaceOrder = async (e) => {
-    e.preventDefault();
-    console.log("handlePlaceOrder: Initiated.");
+    const handlePlaceOrder = async (e) => {
+        e.preventDefault();
+        console.log("handlePlaceOrder: Initiated.");
 
-    if (!authToken || !user?.userId) {
-        setFormError("Please log in to place an order.");
-        navigate('/login', { state: { from: location.pathname } }); // `location` needs to be from `useLocation()`
-        return;
-    }
-    // Use selectedProfileId (the state variable) for the check
-    if (!selectedProfileId) { 
-        setFormError("Please select a measurement profile.");
-        return;
-    }
-    if (!shippingAddress.address.trim() || !shippingAddress.city.trim()) {
-        setFormError("Please provide a complete shipping address.");
-        return;
-    }
-    if (!service || !service._id || !service.tailor || !service.price) {
-        setFormError("Service details are missing or invalid. Cannot place order.");
-        console.error("handlePlaceOrder: Service object is incomplete:", service);
-        return;
-    }
+        if (!authToken || !user?.userId) {
+            setFormError("Please log in to place an order.");
+            navigate('/login', { state: { from: location.pathname } }); // `location` needs to be from `useLocation()`
+            return;
+        }
+        // Use selectedProfileId (the state variable) for the check
+        if (!selectedProfileId) {
+            setFormError("Please select a measurement profile.");
+            return;
+        }
+        if (!shippingAddress.address.trim() || !shippingAddress.city.trim()) {
+            setFormError("Please provide a complete shipping address.");
+            return;
+        }
+        if (!service || !service._id || !service.tailor || !service.price) {
+            setFormError("Service details are missing or invalid. Cannot place order.");
+            console.error("handlePlaceOrder: Service object is incomplete:", service);
+            return;
+        }
 
-    setFormSubmitting(true);
-    setFormError('');
-    setSuccessMessage('');
-    console.log("handlePlaceOrder: formSubmitting set to true.");
+        setFormSubmitting(true);
+        setFormError('');
+        setSuccessMessage('');
+        console.log("handlePlaceOrder: formSubmitting set to true.");
 
-    const tailorObjectId = typeof service.tailor === 'object' ? service.tailor._id : service.tailor;
-    if (!tailorObjectId) {
-        setFormError("Tailor information is missing from the service details.");
-        console.error("handlePlaceOrder: Tailor ID missing from service.tailor:", service.tailor);
-        setFormSubmitting(false);
-        return;
-    }
+        const tailorObjectId = typeof service.tailor === 'object' ? service.tailor._id : service.tailor;
+        if (!tailorObjectId) {
+            setFormError("Tailor information is missing from the service details.");
+            console.error("handlePlaceOrder: Tailor ID missing from service.tailor:", service.tailor);
+            setFormSubmitting(false);
+            return;
+        }
 
-    const orderPayload = {
-        tailorId: tailorObjectId,
-        tailorName: service.tailorName || service.tailor?.fullName,
-        serviceId: service._id,
-        serviceName: service.serviceName,
-        servicePrice: service.price,
-        quantity: 1,
-        shippingAddress,
-        notesToTailor,
-        // ---- CORRECTED LINE ----
-        selectedMeasurementProfileId: selectedProfileId, // Use the state variable 'selectedProfileId'
-    };
-    console.log("handlePlaceOrder: Order payload:", JSON.stringify(orderPayload, null, 2));
+        const orderPayload = {
+            tailorId: tailorObjectId,
+            tailorName: service.tailorName || service.tailor?.fullName,
+            serviceId: service._id,
+            serviceName: service.serviceName,
+            servicePrice: service.price,
+            quantity: 1,
+            shippingAddress,
+            notesToTailor,
+            // ---- CORRECTED LINE ----
+            selectedMeasurementProfileId: selectedProfileId, // Use the state variable 'selectedProfileId'
+        };
+        console.log("handlePlaceOrder: Order payload:", JSON.stringify(orderPayload, null, 2));
 
-    try {
-        console.log("handlePlaceOrder: Attempting to POST to /api/orders");
-        const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`,
-            },
-            body: JSON.stringify(orderPayload),
-        });
-        console.log("handlePlaceOrder: Response received, status:", response.status);
-
-        const responseText = await response.text();
-        console.log("handlePlaceOrder: Response text:", responseText.substring(0, 200));
-
-        let result;
         try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error("handlePlaceOrder: Failed to parse response as JSON.", parseError);
-            console.error("handlePlaceOrder: Response was not JSON, actual text:", responseText);
-            throw new Error(`Server returned non-JSON response (Status: ${response.status}). Check console for response text.`);
-        }
-        
-        console.log("handlePlaceOrder: Parsed result:", result);
+            console.log("handlePlaceOrder: Attempting to POST to /api/orders");
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify(orderPayload),
+            });
+            console.log("handlePlaceOrder: Response received, status:", response.status);
 
-        if (!response.ok) {
-            console.error("handlePlaceOrder: Order placement failed. Result:", result);
-            throw new Error(result.message || 'Failed to place order.');
-        }
+            const responseText = await response.text();
+            console.log("handlePlaceOrder: Response text:", responseText.substring(0, 200));
 
-        setSuccessMessage(`Order placed successfully! Your Order ID: ${result.orderIdString}. Redirecting...`);
-        console.log("handlePlaceOrder: Order placed successfully.");
-        setTimeout(() => {
-            navigate('/customer/orders');
-        }, 3000);
-    } catch (err) {
-        console.error('handlePlaceOrder: Catch block error:', err);
-        setFormError(err.message || "An unexpected error occurred.");
-    } finally {
-        console.log("handlePlaceOrder: finally block, setting formSubmitting to false.");
-        setFormSubmitting(false);
-    }
-};
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error("handlePlaceOrder: Failed to parse response as JSON.", parseError);
+                console.error("handlePlaceOrder: Response was not JSON, actual text:", responseText);
+                throw new Error(`Server returned non-JSON response (Status: ${response.status}). Check console for response text.`);
+            }
+
+            console.log("handlePlaceOrder: Parsed result:", result);
+
+            if (!response.ok) {
+                console.error("handlePlaceOrder: Order placement failed. Result:", result);
+                throw new Error(result.message || 'Failed to place order.');
+            }
+
+            setSuccessMessage(`Order placed successfully! Your Order ID: ${result.orderIdString}. Redirecting...`);
+            console.log("handlePlaceOrder: Order placed successfully.");
+            setTimeout(() => {
+                navigate('/customer/orders');
+            }, 3000);
+        } catch (err) {
+            console.error('handlePlaceOrder: Catch block error:', err);
+            setFormError(err.message || "An unexpected error occurred.");
+        } finally {
+            console.log("handlePlaceOrder: finally block, setting formSubmitting to false.");
+            setFormSubmitting(false);
+        }
+    };
 
 
     if (pageLoading) {

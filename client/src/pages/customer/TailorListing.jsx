@@ -20,7 +20,8 @@ const ServiceDisplayCard = ({ service }) => (
             <img
                 src={service.images && service.images.length > 0 ? service.images[0] : 'https://via.placeholder.com/300x200/E2E8F0/94A3B8?text=Service'}
                 alt={service.serviceName}
-                className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-40 object-fill transition-transform duration-300 group-hover:scale-105 rounded-t-lg" // Tailwind for image styling
+                onError={(e) => e.target.src = '/images/alternateImg.jpg'}
             />
         </div>
         <CardHeader className="pb-2 pt-4">

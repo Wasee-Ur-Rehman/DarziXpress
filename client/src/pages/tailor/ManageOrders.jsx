@@ -158,8 +158,8 @@ const ManageOrders = () => {
                     <CardHeader>
                         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                             <CardTitle className="text-xl">Orders ({filteredOrders.length} of {orders.length})</CardTitle>
-                            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                                <div className="relative flex-grow sm:flex-grow-0 sm:w-64 md:w-72">
+                            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+                                <div className="relative sm:w-64 md:w-72 flex-grow">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                                     <Input
                                         type="text"
@@ -169,7 +169,7 @@ const ManageOrders = () => {
                                         className="pl-10 h-10"
                                     />
                                 </div>
-                                <div className="flex-grow sm:flex-grow-0 sm:w-48">
+                                <div className="flex-grow sm:w-48">
                                     <Label htmlFor="statusFilter" className="sr-only">Filter by status</Label>
                                     <SimplifiedSelect
                                         id="statusFilter"
@@ -178,7 +178,6 @@ const ManageOrders = () => {
                                         className="h-10"
                                     >
                                         <option value="All">All Statuses</option>
-                                        {/* Using updated availableStatuses */}
                                         {availableStatuses.map(status => (
                                             <option key={status} value={status}>{status}</option>
                                         ))}
@@ -198,7 +197,7 @@ const ManageOrders = () => {
                                         <TableHead className="w-[120px]">Order Date</TableHead>
                                         <TableHead className="w-[120px] text-right">Total</TableHead>
                                         <TableHead className="w-[200px]">Status</TableHead>
-                                        <TableHead className="w-[100px] text-right">Actions</TableHead>
+                                        {/* <TableHead className="w-[100px] text-right">Actions</TableHead> */}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -232,13 +231,13 @@ const ManageOrders = () => {
                                                             {updatingStatusId === order._id && <Loader2 className="ml-2 h-4 w-4 animate-spin text-indigo-600" />}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="text-right">
+                                                    {/* <TableCell className="text-right">
                                                         <Button variant="ghost" size="sm" asChild className="text-indigo-600 hover:text-indigo-700">
                                                             <Link to={`/tailor/order-details/${order._id}`}>
                                                                 <Eye className="w-4 h-4 mr-1" /> View
                                                             </Link>
                                                         </Button>
-                                                    </TableCell>
+                                                    </TableCell> */}
                                                 </TableRow>
                                             );
                                         })
@@ -255,7 +254,7 @@ const ManageOrders = () => {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 
